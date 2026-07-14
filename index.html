@@ -287,5 +287,74 @@
   <script src="js/data/guardianas/sofia.js?v=6"></script>
   <script src="js/data/guardianas/index.js?v=6"></script>
   <script src="js/engine.js?v=6"></script>
+
+  <script>
+  /* ===== REGISTRO SHEETS - Guardianas Digitales =====
+     Este juego ya tiene el formulario en screen-intro:
+     #regFullName / #regEmail / #regAgeRange
+     Solo necesitamos leer esos campos en el momento
+     en que el usuario hace clic en #startBtn y enviar
+     a Google Sheets. Sin modal extra, sin conflictos.
+  =================================================== */
+  (function(){
+    var EP = "https://script.google.com/macros/s/AKfycbxsjgvPglrhTQTCZsfXcQCkph6HyDOy4XvDySDtlnQdBeJT_RfRgut7sDsxldEqyoCf/exec";
+
+    /* ---- Toast de confirmacion ---- */
+    function toast(msg, color){
+      var t = document.createElement("div");
+      t.textContent = msg;
+      t.style.cssText = "position:fixed;bottom:1.5rem;right:1.5rem;z-index:999999;"+
+        "background:"+(color||"#0d9488")+";color:#fff;font-family:system-ui,sans-serif;"+
+        "font-size:.85rem;font-weight:600;padding:.65rem 1.1rem;border-radius:.6rem;"+
+        "box-shadow:0 4px 20px rgba(0,0,0,.4)";
+      document.body.appendChild(t);
+      setTimeout(function(){ t.style.transition="opacity .6s"; t.style.opacity="0"; },2800);
+      setTimeout(function(){ t.remove(); },3500);
+    }
+
+    /* ---- Envio HTTP a Google Sheets ----
+       Nota: sin Content-Type personalizado (bloqueado en no-cors).
+       El Apps Script recibe el JSON en e.postData.contents. */
+    function enviar(d){
+      fetch(EP, { method:"POST", mode:"no-cors", body:JSON.stringify(d) })
+        .then(function(){ toast("Registro guardado correctamente"); })
+        .catch(function(e){ toast("Error al guardar: "+e.message,"#dc2626"); });
+      console.info("[Sheets GD]", d.nombre, "/", d.edad);
+    }
+
+    /* ---- Captura en el momento del clic en Comenzar ----
+       El formulario ya esta lleno en screen-intro.
+       Dejamos que engine.js procese el mismo click
+       (el va a screen-select y llena la grilla de guardianas).
+       Nosotros solo leemos los campos y enviamos a Sheets. */
+    document.addEventListener("DOMContentLoaded", function(){
+      var btn = document.getElementById("startBtn");
+      if (!btn) return;
+
+      btn.addEventListener("click", function(){
+        var nom  = (document.getElementById("regFullName") ? document.getElementById("regFullName").value : "").trim();
+        var mail = (document.getElementById("regEmail")    ? document.getElementById("regEmail").value    : "").trim();
+        var edad =  document.getElementById("regAgeRange") ? document.getElementById("regAgeRange").value : "";
+
+        /* Solo enviar si hay al menos nombre o edad */
+        if (!nom && !edad) return;
+
+        enviar({
+          evento  : "registro",
+          juego   : "Guardianas Digitales",
+          nombre  : nom,
+          correo  : mail,
+          edad    : edad,
+          modo    : "individual",
+          completo: false
+        });
+      });
+
+      console.info("[Sheets GD] Listener de registro activo en #startBtn");
+    });
+
+  })();
+  </script>
+
 </body>
 </html>
