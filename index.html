@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>Guardianas Digitales · Simulador de Seguridad Digital</title>
+<meta name="description" content="Simulación estratégica de ciudadanía y seguridad digital para mujeres jóvenes de Bogotá. Alcaldía Local de San Cristóbal." />
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🛡️</text></svg>">
+</head>
+<body class="min-h-screen bg-app text-slate-100 antialiased">
+
+  <header id="topBar" class="sticky top-0 z-[999] w-full bg-white shadow-lg flex items-center justify-between gap-2 px-3 py-2">
+    <img id="headerLogo" src="assets/img/logos-institucionales.png" alt="Alcaldía Mayor de Bogotá D.C · Alcaldía Local de San Cristóbal · Bogotá"
+      class="h-8 sm:h-10 w-auto" onerror="this.style.display='none'" />
+    <button id="quickExitBtn" title="Salir de inmediato de esta página"
+      class="flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[11px] sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 transition">
+      <span aria-hidden="true">⨯</span><span class="hidden sm:inline">Salida rápida</span>
+    </button>
+  </header>
+
+  <div id="achievementToast" class="achievement-toast hidden"></div>
+
+  <div id="app" class="relative mx-auto min-h-screen w-full max-w-5xl px-3 sm:px-6 pb-10">
+
+    <!-- ============ PANTALLA: PORTADA ============ -->
+    <section id="screen-intro" data-screen class="pt-8 sm:pt-12">
+      <div class="text-center mb-8">
+        <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br from-cyan-500 to-teal-500 text-4xl shadow-lg shadow-cyan-900/40">🛡️</div>
+        <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-teal-200 to-emerald-300">Guardianas Digitales</h1>
+        <p class="mt-2 text-slate-300 text-sm sm:text-base italic">"Cada clic es una decisión. Cada decisión puede proteger una vida."</p>
+        <p class="mt-1 text-xs text-slate-400">Componente "Acciones pedagógicas para la resolución de conflictos" · Alcaldía Local de San Cristóbal, Bogotá</p>
+      </div>
+
+      <div class="card p-5 sm:p-7 space-y-4">
+        <h2 class="font-bold text-lg text-cyan-200">Antes de empezar</h2>
+        <p class="text-sm sm:text-base text-slate-200 leading-relaxed">
+          Te conviertes en una <strong class="text-white">Guardiana Digital</strong>: una voluntaria que ayuda a proteger comunidades virtuales de Bogotá frente a amenazas digitales.
+          No hay niveles — hay <strong class="text-white">casos</strong>. Cada uno te pide investigar, reunir evidencia y elegir bien qué herramienta usar antes de actuar.
+        </p>
+        <ul class="grid sm:grid-cols-2 gap-3 text-sm">
+          <li class="flex gap-2 items-start"><span class="text-emerald-400">✓</span><span>Puedes detenerte o salir en cualquier momento.</span></li>
+          <li class="flex gap-2 items-start"><span class="text-emerald-400">✓</span><span>No hay respuestas "perdedoras": cada caso enseña algo.</span></li>
+          <li class="flex gap-2 items-start"><span class="text-emerald-400">✓</span><span>Al final encontrarás rutas reales de denuncia en Colombia.</span></li>
+          <li class="flex gap-2 items-start"><span class="text-emerald-400">✓</span><span>Ideal para jugarse en grupo, con acompañamiento de facilitación.</span></li>
+        </ul>
+        <div class="rounded-xl bg-rose-950/60 border border-rose-800/60 p-3.5 text-xs sm:text-sm text-rose-100">
+          <strong>Si en este momento vives una situación de riesgo digital urgente</strong> (extorsión activa, amenazas), comunícate ya al CAI Virtual de la Policía o a la Línea 123. Este juego es una herramienta educativa, no un servicio de emergencia.
+        </div>
+
+        <div class="border-t border-slate-700/50 pt-4 space-y-3">
+          <h3 class="font-bold text-sm text-cyan-200">Registro de participante</h3>
+          <p class="text-xs text-slate-400 -mt-2">Estos datos quedan guardados solo en este navegador (no se envían a internet) y sirven para que el equipo facilitador reporte la asistencia a la actividad.</p>
+          <div class="grid sm:grid-cols-2 gap-3">
+            <div>
+              <label for="regFullName" class="block text-xs font-semibold text-slate-300 mb-1">Nombre completo</label>
+              <input id="regFullName" type="text" placeholder="Nombre y apellidos" autocomplete="name"
+                class="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+            </div>
+            <div>
+              <label for="regEmail" class="block text-xs font-semibold text-slate-300 mb-1">Correo electrónico</label>
+              <input id="regEmail" type="email" placeholder="nombre@correo.com" autocomplete="email"
+                class="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+            </div>
+            <div class="sm:col-span-2">
+              <label for="regAgeRange" class="block text-xs font-semibold text-slate-300 mb-1">Rango de edad</label>
+              <select id="regAgeRange"
+                class="w-full rounded-lg bg-slate-800 border border-slate-600 px-3 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                <option value="">Selecciona un rango…</option>
+                <option value="menor_15">Menos de 15</option>
+                <option value="15_17">15 a 17</option>
+                <option value="18_20">18 a 20</option>
+                <option value="21_25">21 a 25</option>
+                <option value="mayor_25">Más de 25</option>
+              </select>
+            </div>
+          </div>
+          <p id="regError" class="text-xs text-rose-300 hidden"></p>
+        </div>
+
+        <label class="flex items-start gap-3 text-sm text-slate-300 pt-1">
+          <input id="consentCheck" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-500 bg-slate-800 text-cyan-400 focus:ring-cyan-400" />
+          <span>Entiendo el propósito educativo del juego y deseo continuar.</span>
+        </label>
+        <button id="startBtn" disabled class="btn-primary w-full sm:w-auto disabled:opacity-40 disabled:cursor-not-allowed">
+          Comenzar → Elegir Guardiana
+        </button>
+      </div>
+
+      <div class="mt-4 text-center">
+        <button id="skipToResources" class="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-2">Ver directorio de rutas de denuncia sin jugar</button>
+      </div>
+    </section>
+
+    <!-- ============ PANTALLA: SELECCIÓN DE GUARDIANA ============ -->
+    <section id="screen-select" data-screen class="hidden pt-6 sm:pt-8">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold">¿Qué Guardiana quieres ser hoy?</h2>
+        <p class="text-slate-300 text-sm mt-1 max-w-2xl mx-auto">Cada una aporta una especialidad distinta a la comunidad digital de Bogotá.</p>
+      </div>
+      <div id="guardianaGrid" class="grid sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ============ PANTALLA: TABLERO DE CASOS ============ -->
+    <section id="screen-cases" data-screen class="hidden pt-6 sm:pt-8">
+      <div class="card p-4 sm:p-5 mb-5 flex items-center gap-3">
+        <div id="caseHudAvatar" class="h-12 w-12 shrink-0 rounded-full overflow-hidden bg-slate-800"></div>
+        <div class="min-w-0 flex-1">
+          <p id="caseHudName" class="font-bold leading-tight"></p>
+          <p id="caseHudSpecialty" class="text-xs text-cyan-300 leading-tight"></p>
+        </div>
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+          <div class="stat-chip" title="Protección digital"><span>🛡️</span><div class="stat-bar"><div id="barProteccion" class="stat-fill bg-cyan-400"></div></div></div>
+          <div class="stat-chip" title="Comunidad"><span>🤝</span><div class="stat-bar"><div id="barComunidad" class="stat-fill bg-emerald-400"></div></div></div>
+          <div class="stat-chip" title="Ciudadanía digital"><span>🎓</span><div class="stat-bar"><div id="barCiudadania" class="stat-fill bg-teal-400"></div></div></div>
+        </div>
+        <button id="btnToolkitCases" class="btn-ghost text-xs sm:text-sm">🧰 Kit</button>
+        <button id="btnResourcesCases" class="btn-ghost text-xs sm:text-sm">📖 Rutas</button>
+        <button id="btnChangeGuardiana" class="btn-ghost text-xs sm:text-sm">👥 Cambiar</button>
+        <button id="btnExportRegistrosCases" class="btn-ghost text-xs sm:text-sm" title="Exportar registros de participantes">⬇ CSV</button>
+      </div>
+      <h3 class="text-lg font-bold mb-3">📋 Casos disponibles</h3>
+      <div id="caseGrid" class="grid sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- ============ PANTALLA: JUEGO (CASO EN CURSO) ============ -->
+    <section id="screen-game" data-screen class="hidden pt-4 sm:pt-6">
+      <div class="card p-3 sm:p-4 mb-3 flex flex-wrap items-center gap-3 justify-between">
+        <div class="flex items-center gap-2 min-w-0">
+          <div id="hudAvatar" class="h-9 w-9 shrink-0 rounded-full overflow-hidden bg-slate-800"></div>
+          <div class="min-w-0">
+            <p id="hudName" class="font-semibold text-sm leading-tight truncate"></p>
+            <p id="hudScenario" class="text-[11px] text-slate-400 leading-tight truncate"></p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div class="stat-chip" title="Protección digital"><span>🛡️</span><div class="stat-bar"><div id="barProteccionGame" class="stat-fill bg-cyan-400"></div></div></div>
+          <div class="stat-chip" title="Comunidad"><span>🤝</span><div class="stat-bar"><div id="barComunidadGame" class="stat-fill bg-emerald-400"></div></div></div>
+          <div class="stat-chip" title="Ciudadanía digital"><span>🎓</span><div class="stat-bar"><div id="barCiudadaniaGame" class="stat-fill bg-teal-400"></div></div></div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button id="btnToolkit" class="btn-ghost text-xs sm:text-sm">🧰 Kit</button>
+          <button id="btnResources" class="btn-ghost text-xs sm:text-sm">📖 Rutas</button>
+          <button id="btnMenu" class="btn-ghost text-xs sm:text-sm">☰</button>
+        </div>
+      </div>
+
+      <div id="sceneWrap" class="card overflow-hidden">
+        <div id="sceneBg" class="scene-bg px-5 py-8 sm:px-9 sm:py-12 min-h-[220px] flex flex-col sm:flex-row sm:items-end gap-4 transition-all duration-500">
+          <div id="scenePortrait" class="portrait-wrap shrink-0"></div>
+          <div class="max-w-2xl">
+            <p id="speakerName" class="text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5"></p>
+            <p id="sceneText" class="text-base sm:text-lg leading-relaxed text-white drop-shadow-md whitespace-pre-line"></p>
+          </div>
+        </div>
+
+        <div id="choicesWrap" class="p-4 sm:p-5 space-y-2.5 bg-slate-900/70"></div>
+
+        <div id="chatNode" class="hidden p-4 sm:p-5 bg-slate-900/70">
+          <div id="chatBubbles" class="chat-phone space-y-2"></div>
+          <button id="chatContinueBtn" class="btn-primary w-full sm:w-auto mt-3 hidden">Continuar →</button>
+        </div>
+
+        <div id="minigameNode" class="hidden p-4 sm:p-5 bg-slate-900/70 space-y-3">
+          <p id="minigameInstructions" class="text-sm text-slate-300"></p>
+          <div id="minigameItems" class="space-y-2"></div>
+          <div class="flex gap-2.5 flex-wrap">
+            <button id="minigameCheckBtn" class="btn-primary">Comprobar ✓</button>
+            <button id="minigameContinueBtn" class="btn-ghost hidden">Continuar →</button>
+          </div>
+        </div>
+
+        <div id="inspectNode" class="hidden p-4 sm:p-5 bg-slate-900/70 space-y-3">
+          <p id="inspectInstructions" class="text-sm text-slate-300"></p>
+          <div id="inspectFrame" class="mock-frame"></div>
+          <div class="flex gap-2.5 flex-wrap">
+            <button id="inspectCheckBtn" class="btn-primary">Comprobar ✓</button>
+            <button id="inspectContinueBtn" class="btn-ghost hidden">Continuar →</button>
+          </div>
+        </div>
+
+        <div id="allocateNode" class="hidden p-4 sm:p-5 bg-slate-900/70 space-y-3">
+          <p id="allocateInstructions" class="text-sm text-slate-300"></p>
+          <div id="allocateCounter" class="allocate-counter"></div>
+          <div id="allocateGrid" class="allocate-grid"></div>
+          <div class="flex gap-2.5 flex-wrap">
+            <button id="allocateConfirmBtn" class="btn-primary" disabled>Confirmar plan ✓</button>
+            <button id="allocateContinueBtn" class="btn-ghost hidden">Continuar →</button>
+          </div>
+        </div>
+
+        <div id="feedbackWrap" class="hidden p-4 sm:p-5 bg-slate-900/90 border-t border-slate-700/60">
+          <div class="flex gap-2.5 items-start">
+            <span class="text-xl leading-none" id="feedbackIcon">💬</span>
+            <p id="feedbackText" class="text-sm text-slate-200 leading-relaxed"></p>
+          </div>
+          <button id="feedbackContinueBtn" class="btn-primary mt-3">Continuar →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ PANTALLA: RESOLUCIÓN DEL CASO ============ -->
+    <section id="screen-ending" data-screen class="hidden pt-6 sm:pt-8">
+      <div class="card p-6 sm:p-9 text-center">
+        <div id="endingIcon" class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl text-4xl"></div>
+        <p class="text-xs uppercase tracking-widest text-slate-400 mb-1">Resolución del caso</p>
+        <h2 id="endingTitle" class="text-2xl sm:text-3xl font-extrabold mb-3"></h2>
+        <p id="endingText" class="text-slate-200 leading-relaxed max-w-2xl mx-auto"></p>
+      </div>
+
+      <div class="card p-5 sm:p-7 mt-4 hidden" id="npcReactionCard">
+        <h3 class="font-bold text-cyan-200 mb-3">Respuesta de la ruta institucional</h3>
+        <div id="npcReactionBody" class="flex items-start gap-3"></div>
+      </div>
+
+      <div class="card p-5 sm:p-7 mt-4" id="achievementsCard">
+        <h3 class="font-bold text-cyan-200 mb-3">🏆 Logros desbloqueados</h3>
+        <div id="achievementsList" class="grid sm:grid-cols-2 gap-2.5"></div>
+      </div>
+
+      <div class="card p-5 sm:p-7 mt-4">
+        <h3 class="font-bold text-cyan-200 mb-3">Para conversar en grupo</h3>
+        <ul id="debriefQuestions" class="space-y-2 text-sm text-slate-200 list-disc list-inside"></ul>
+      </div>
+
+      <div class="flex flex-wrap gap-2.5 justify-center mt-5">
+        <button id="btnViewResourcesEnd" class="btn-ghost">📖 Ver rutas de denuncia</button>
+        <button id="btnBackToCases" class="btn-primary">↺ Volver a mis casos</button>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ============ MODAL: RECURSOS ============ -->
+  <div id="modalResources" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold">📖 Rutas de denuncia digital en Colombia</h3>
+        <button data-close-modal class="btn-ghost !px-2 !py-1">✕</button>
+      </div>
+      <div id="resourcesList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+      <p class="text-[11px] text-slate-400 mt-4">Los números y enlaces deben ser verificados por el equipo facilitador antes de cada sesión.</p>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: MENÚ ============ -->
+  <div id="modalMenu" class="modal-backdrop hidden">
+    <div class="modal-card !max-w-sm">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold">☰ Menú</h3>
+        <button data-close-modal class="btn-ghost !px-2 !py-1">✕</button>
+      </div>
+      <div class="space-y-2">
+        <button id="menuBackToCases" class="btn-ghost w-full text-left">↺ Volver a mis casos</button>
+        <button id="menuChangeGuardiana" class="btn-ghost w-full text-left">👥 Cambiar de Guardiana</button>
+        <button id="menuToolkit" class="btn-ghost w-full text-left">🧰 Kit de herramientas</button>
+        <button id="menuResources" class="btn-ghost w-full text-left">📖 Rutas de denuncia</button>
+        <button id="menuExportRegistros" class="btn-ghost w-full text-left">⬇ Exportar registros (CSV)</button>
+        <button id="menuExit" class="btn-ghost w-full text-left text-rose-300">⨯ Salida rápida</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ MODAL: KIT DE HERRAMIENTAS ============ -->
+  <div id="modalToolkit" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-bold">🧰 Kit de herramientas de ciberseguridad</h3>
+        <button data-close-modal class="btn-ghost !px-2 !py-1">✕</button>
+      </div>
+      <p class="text-xs text-slate-400 mb-3">Estas son las herramientas que una Guardiana Digital puede usar. No todos los casos ofrecen todas — elige siempre pensando en qué necesita la persona en ese momento.</p>
+      <div id="toolkitList" class="space-y-3 max-h-[60vh] overflow-y-auto pr-1"></div>
+    </div>
+  </div>
+
+  <!-- Scripts clásicos (no type="module") a propósito: deben abrir con doble clic, sin servidor. -->
+  <script src="js/avatars.js?v=6"></script>
+  <script src="js/data/world/resources.js?v=6"></script>
+  <script src="js/data/world/toolkit.js?v=6"></script>
+  <script src="js/data/world/npcs.js?v=6"></script>
+  <script src="js/data/platforms.js?v=6"></script>
+  <script src="js/data/achievements.js?v=6"></script>
+  <script src="js/data/endings.js?v=6"></script>
+  <script src="js/data/debrief.js?v=6"></script>
+  <script src="js/data/guardianas/valentina.js?v=6"></script>
+  <script src="js/data/guardianas/sofia.js?v=6"></script>
+  <script src="js/data/guardianas/index.js?v=6"></script>
+  <script src="js/engine.js?v=6"></script>
+</body>
+</html>
