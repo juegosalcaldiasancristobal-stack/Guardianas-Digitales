@@ -290,16 +290,12 @@
 
   <script>
   /* ===== REGISTRO SHEETS - Guardianas Digitales =====
-     Este juego ya tiene el formulario en screen-intro:
-     #regFullName / #regEmail / #regAgeRange
-     Solo necesitamos leer esos campos en el momento
-     en que el usuario hace clic en #startBtn y enviar
-     a Google Sheets. Sin modal extra, sin conflictos.
+     Google Sheets: GUARDIANAS DIGITALES
+     Apps Script:   AKfycbwFRBcEjMc...
   =================================================== */
   (function(){
-    var EP = "https://script.google.com/macros/s/AKfycbxsjgvPglrhTQTCZsfXcQCkph6HyDOy4XvDySDtlnQdBeJT_RfRgut7sDsxldEqyoCf/exec";
+    var EP = "https://script.google.com/macros/s/AKfycbwFRBcEjMcmtgYJQ2l8M9cT6hgW9LVLT7_uJ0o5pCKYLoq-IOnkfk-_2Qs0lQxg_VKZ/exec";
 
-    /* ---- Toast de confirmacion ---- */
     function toast(msg, color){
       var t = document.createElement("div");
       t.textContent = msg;
@@ -312,9 +308,6 @@
       setTimeout(function(){ t.remove(); },3500);
     }
 
-    /* ---- Envio HTTP a Google Sheets ----
-       Nota: sin Content-Type personalizado (bloqueado en no-cors).
-       El Apps Script recibe el JSON en e.postData.contents. */
     function enviar(d){
       fetch(EP, { method:"POST", mode:"no-cors", body:JSON.stringify(d) })
         .then(function(){ toast("Registro guardado correctamente"); })
@@ -322,21 +315,15 @@
       console.info("[Sheets GD]", d.nombre, "/", d.edad);
     }
 
-    /* ---- Captura en el momento del clic en Comenzar ----
-       El formulario ya esta lleno en screen-intro.
-       Dejamos que engine.js procese el mismo click
-       (el va a screen-select y llena la grilla de guardianas).
-       Nosotros solo leemos los campos y enviamos a Sheets. */
     document.addEventListener("DOMContentLoaded", function(){
       var btn = document.getElementById("startBtn");
       if (!btn) return;
 
       btn.addEventListener("click", function(){
-        var nom  = (document.getElementById("regFullName") ? document.getElementById("regFullName").value : "").trim();
-        var mail = (document.getElementById("regEmail")    ? document.getElementById("regEmail").value    : "").trim();
-        var edad =  document.getElementById("regAgeRange") ? document.getElementById("regAgeRange").value : "";
+        var nom  = (document.getElementById("regFullName") ? document.getElementById("regFullName").value  : "").trim();
+        var mail = (document.getElementById("regEmail")    ? document.getElementById("regEmail").value     : "").trim();
+        var edad =  document.getElementById("regAgeRange") ? document.getElementById("regAgeRange").value  : "";
 
-        /* Solo enviar si hay al menos nombre o edad */
         if (!nom && !edad) return;
 
         enviar({
@@ -349,8 +336,6 @@
           completo: false
         });
       });
-
-      console.info("[Sheets GD] Listener de registro activo en #startBtn");
     });
 
   })();
