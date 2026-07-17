@@ -16,17 +16,17 @@ const valentinaCases = [
   {
     id: "caso001", title: "¿Amistad o control?", platform: "chat_escolar",
     brief: "Laura (14 años) te escribe preocupada: un compañero de otro salón le escribe todo el día, se molesta si no responde rápido, y le pregunta constantemente dónde está.",
-    scenarioId: "caso001", npc: "orientadora",
+    scenarioId: "caso001", npc: "orientadora", theme: "control",
   },
   {
     id: "caso004", title: "El perfil que no era ella", platform: "comunidad_gamer",
     brief: "Alguien creó un perfil idéntico al de Mafe, una gamer conocida en un servidor de Bogotá, y está pidiendo dinero a sus seguidores haciéndose pasar por ella.",
-    scenarioId: "caso004", requires: "caso001", npc: "moderador",
+    scenarioId: "caso004", requires: "caso001", npc: "moderador", theme: "suplantacion",
   },
   {
     id: "caso_doxing", title: "El hilo que expuso su dirección", platform: "foro",
     brief: "Tras una discusión de vecinos, alguien publicó en un foro la dirección exacta, el trabajo y fotos de la casa de Andrea, incitando a otros a 'pasar a buscarla'.",
-    scenarioId: "caso_doxing", requires: "caso004", npc: "caivirtual",
+    scenarioId: "caso_doxing", requires: "caso004", npc: "caivirtual", theme: "doxing",
   },
 ];
 
@@ -50,6 +50,7 @@ const valentinaScenarios = {
 
       v2: { type: "inspect", mood: "preocupada", frameIcon: "📊", frameLabel: "Patrón de mensajes — últimos 3 días",
         instructions: "Toca los indicadores del patrón que consideres señales de control, no solo de interés o cariño.",
+        tip: "Fíjate en el patrón de exigencias — frecuencia, control de ubicación, reacción a la demora. El tono amable de un mensaje no dice nada sobre si hay control detrás.",
         hotspots: [
           { id: "freq", kind: "bio", isFlag: true,
             html: "📈 <strong>Frecuencia:</strong> más de 15 mensajes seguidos en 2 horas",
@@ -73,6 +74,7 @@ const valentinaScenarios = {
       v4: { type: "minigame", subtype: "tapflags", mode: "evidencia", mood: "preocupada",
         speaker: "📁 Reúne evidencia — ¿Qué es útil guardar?",
         instructions: "Selecciona solo lo que realmente sirve como evidencia. Guardar de más también tiene riesgos.",
+        tip: "La evidencia útil identifica el hecho, a quién corresponde y cuándo ocurrió. Los datos personales de la víctima nunca son evidencia — y compartirlos, incluso 'para documentar', la expone más.",
         items: [
           { id: "e1", text: "Captura de la conversación completa", isFlag: true,
             explain: "El registro textual es la evidencia más directa y verificable." },
@@ -89,6 +91,7 @@ const valentinaScenarios = {
         "Como Guardiana tienes tiempo para dos acciones prioritarias en este caso. Elige con cuidado — no alcanza para todo.",
         bg: "scene-room", slots: 2, requiresGoodEvidence: true,
         instructions: "Elige exactamente 2 acciones para orientar a Laura.",
+        tip: "Combinar acompañamiento humano (un adulto de confianza) con evidencia bien guardada siempre es más fuerte que actuar en silencio o depender solo de la plataforma.",
         options: [
           { id: "a1", tool: "pedirayuda", icon: "🆘", label: "Hablar con un adulto de confianza", quality: 1,
             explain: "Combinar acompañamiento humano con evidencia ya lista es la ruta más sólida." },
@@ -136,6 +139,7 @@ const valentinaScenarios = {
 
       g2: { type: "inspect", mood: "preocupada", frameIcon: "🎮", frameLabel: "Perfil sospechoso — @MafeGamer_ok",
         instructions: "Toca los elementos del perfil que son señal de que podría ser falso.",
+        tip: "Una cuenta suplantadora suele ser reciente, sin contenido propio y con enlaces externos pidiendo dinero. Copiar el 'diseño' no prueba nada — cualquiera puede imitar colores y logos.",
         achievementOnPerfect: "perfil_falso",
         hotspots: [
           { id: "created", kind: "avatarrow", isFlag: true,
@@ -159,6 +163,7 @@ const valentinaScenarios = {
       g3: { type: "minigame", subtype: "tapflags", mode: "evidencia", mood: "preocupada",
         speaker: "📁 Reúne evidencia antes de actuar",
         instructions: "Selecciona solo lo que sirve como evidencia real del caso.",
+        tip: "Nunca compartas contraseñas como 'evidencia', ni siquiera entre Guardianas — una contraseña real jamás forma parte de una denuncia.",
         items: [
           { id: "e1", text: "Capturas del perfil falso completo", isFlag: true, explain: "Muestra el contenido exacto que se está usando para engañar." },
           { id: "e2", text: "URL o enlace del perfil falso", isFlag: true, explain: "Permite a la plataforma y a las autoridades ubicar la cuenta exacta." },
@@ -172,6 +177,7 @@ const valentinaScenarios = {
         "Tienes tiempo para dos acciones prioritarias antes de que más personas caigan en la estafa.",
         bg: "scene-street-day", slots: 2, requiresGoodEvidence: true,
         instructions: "Elige exactamente 2 acciones.",
+        tip: "Reportar con evidencia completa y avisar directamente a la persona suplantada suele ser más rápido que solo bloquear, que únicamente te protege a ti.",
         options: [
           { id: "a1", tool: "reportar", icon: "🚩", label: "Reportar el perfil falso con toda la evidencia", quality: 1,
             explain: "Un reporte bien documentado —capturas, URL y mensajes— es justo lo que la moderación necesita para actuar rápido." },
@@ -225,6 +231,7 @@ const valentinaScenarios = {
 
       dx2: { type: "inspect", mood: "asustada", frameIcon: "⚠️", frameLabel: "Hilo del foro de vecinos",
         instructions: "Toca los elementos del hilo que son señal de doxing — exposición de datos personales con intención de daño.",
+        tip: "El doxing se reconoce por exponer datos que permiten ubicar físicamente a alguien (dirección, rutina), combinado con una intención de daño. El contexto del conflicto en sí no es la señal.",
         hotspots: [
           { id: "addr", kind: "bio", isFlag: true,
             html: "📍 <strong>Publica la dirección exacta:</strong> Calle 27 Sur #14-32",
@@ -248,6 +255,7 @@ const valentinaScenarios = {
       dx4: { type: "minigame", subtype: "tapflags", mode: "evidencia", mood: "preocupada",
         speaker: "📁 Reúne evidencia",
         instructions: "Selecciona solo lo necesario para el reporte y la denuncia.",
+        tip: "Nunca vuelvas a compartir la información doxeada, ni siquiera 'para advertir a otros' — cada repetición multiplica el daño en vez de contenerlo.",
         items: [
           { id: "e1", text: "Captura completa del hilo con fecha y hora", isFlag: true, explain: "Es la prueba central de la publicación." },
           { id: "e2", text: "URL o nombre exacto del foro y el hilo", isFlag: true, explain: "Permite ubicar la publicación para pedir que la retiren." },
@@ -261,6 +269,7 @@ const valentinaScenarios = {
         "Tienes tiempo para dos acciones prioritarias mientras el hilo sigue activo.",
         bg: "scene-tension", slots: 2, requiresGoodEvidence: true,
         instructions: "Elige exactamente 2 acciones.",
+        tip: "En un caso de doxing, avisar de inmediato a la persona afectada es tan urgente como denunciar — el riesgo físico no espera a que termine el trámite.",
         options: [
           { id: "a1", tool: "pedirayuda", icon: "🆘", label: "Avisar a Andrea de inmediato", quality: 1,
             explain: "Avisarle directamente le da a Andrea la posibilidad de tomar decisiones informadas sobre su propia seguridad física — el paso más urgente en un caso de doxing." },
