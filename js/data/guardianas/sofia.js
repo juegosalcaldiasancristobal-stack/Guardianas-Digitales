@@ -21,12 +21,12 @@ const sofiaCases = [
   {
     id: "caso002", title: "La foto que no debía circular", platform: "red_social",
     brief: "Camila (18 años) te escribe: alguien compartió, sin su permiso, una foto privada suya en un grupo de la localidad.",
-    scenarioId: "caso002", npc: "caivirtual",
+    scenarioId: "caso002", npc: "caivirtual", theme: "imagenes",
   },
   {
     id: "caso003", title: "El enlace de la beca", platform: "universidad",
     brief: "Manuela, compañera de universidad, recibió un mensaje que promete una beca — solo tiene que 'confirmar sus datos' en un enlace.",
-    scenarioId: "caso003", requires: "caso002", npc: "caivirtual",
+    scenarioId: "caso003", requires: "caso002", npc: "caivirtual", theme: "phishing",
   },
 ];
 
@@ -43,6 +43,7 @@ const sofiaScenarios = {
 
       s2: { type: "inspect", mood: "preocupada", frameIcon: "📌", frameLabel: "Publicación circulando",
         instructions: "Toca los datos relevantes para entender la gravedad y el alcance del caso.",
+        tip: "Para medir la gravedad de un caso de imagen no consentida, fíjate en el alcance de la difusión, quién la publicó y si sigue activa — no en lo que la víctima haya compartido antes.",
         hotspots: [
           { id: "reach", kind: "bio", isFlag: true,
             html: "👥 <strong>Alcance:</strong> grupo con más de 800 personas",
@@ -62,6 +63,7 @@ const sofiaScenarios = {
       s3: { type: "minigame", subtype: "tapflags", mode: "evidencia", mood: "preocupada",
         speaker: "📁 Reúne evidencia con Camila",
         instructions: "Selecciona solo lo necesario para una denuncia formal.",
+        tip: "La evidencia debe mostrar el hecho (captura, fecha), dónde circula y quién lo hizo. Los comentarios ofensivos de terceros no son evidencia del delito principal.",
         items: [
           { id: "e1", text: "Captura de la publicación con fecha y hora visibles", isFlag: true, explain: "Es la prueba central del hecho." },
           { id: "e2", text: "Enlace o nombre del grupo donde circula", isFlag: true, explain: "Permite ubicar exactamente dónde se está difundiendo." },
@@ -75,6 +77,7 @@ const sofiaScenarios = {
         "Con la evidencia lista, tienes tiempo para dos acciones prioritarias.",
         bg: "scene-room", slots: 2, requiresGoodEvidence: true,
         instructions: "Elige exactamente 2 acciones para acompañar a Camila.",
+        tip: "En casos de difusión no consentida de imágenes, la denuncia formal es el paso con más peso legal (Ley 1273 y 1257), pero acompañar emocionalmente a la persona también es parte del rol de una Guardiana.",
         options: [
           { id: "a1", tool: "denunciar", icon: "📢", label: "Denunciar formalmente en el CAI Virtual", quality: 1,
             explain: "En Colombia, difundir contenido íntimo sin consentimiento es delito (Ley 1273 de 2009 y Ley 1257 de 2008)." },
@@ -82,6 +85,8 @@ const sofiaScenarios = {
             explain: "Ayuda a frenar la difusión más rápido, aunque no reemplaza la denuncia formal." },
           { id: "a3", tool: "pedirayuda", icon: "🤝", label: "Conectar con la Línea Púrpura (apoyo emocional)", quality: 0.5,
             explain: "Cuidar el bienestar emocional de Camila es tan importante como el trámite." },
+          { id: "a5", tool: "privacidad", icon: "⚙️", label: "Ajustar la configuración de privacidad de su cuenta", quality: 0.5,
+            explain: "Reduce el riesgo de que algo así vuelva a pasar, pero no resuelve la publicación que ya está circulando — es un complemento, no la acción principal." },
           { id: "a4", tool: "nada", icon: "🙊", label: "Aconsejarle borrar su cuenta y esperar que pase", quality: 0,
             explain: "Esconderse no detiene la difusión, y deja a Camila sin acompañamiento ni ruta clara." },
         ],
@@ -112,6 +117,7 @@ const sofiaScenarios = {
 
       ph2: { type: "inspect", mood: "preocupada", frameIcon: "🎓", frameLabel: "Mensaje recibido por Manuela",
         instructions: "Toca los elementos del mensaje que son señal de phishing.",
+        tip: "El phishing casi siempre combina tres señales: urgencia artificial, petición de datos sensibles y un enlace que no lleva al dominio oficial. Un logo bonito no prueba que el mensaje sea legítimo.",
         hotspots: [
           { id: "urgency", kind: "emailrow", isFlag: true,
             html: '<span class="mock-label">Plazo</span> Solo 2 horas para confirmar o pierdes el cupo',
@@ -135,6 +141,7 @@ const sofiaScenarios = {
       ph4: { type: "minigame", subtype: "tapflags", mode: "evidencia", mood: "preocupada",
         speaker: "📁 Reúne evidencia",
         instructions: "Selecciona solo lo que sirve para el reporte.",
+        tip: "Guarda el mensaje completo y la URL exacta — pero nunca reenvíes el enlace sospechoso, ni siquiera para 'que otros opinen': eso multiplica el riesgo de que alguien más haga clic.",
         items: [
           { id: "e1", text: "Captura completa del mensaje", isFlag: true, explain: "Registra el contenido exacto del intento de phishing." },
           { id: "e2", text: "La URL exacta del enlace sospechoso", isFlag: true, explain: "Permite que la universidad y la plataforma bloqueen ese dominio." },
@@ -148,6 +155,7 @@ const sofiaScenarios = {
         "Con las señales claras y la evidencia lista, tienes tiempo para dos acciones prioritarias.",
         bg: "scene-room", slots: 2, requiresGoodEvidence: true,
         instructions: "Elige exactamente 2 acciones para orientar a Manuela.",
+        tip: "Verificar por un canal oficial distinto (llamar, escribir directo a la entidad) es más seguro que confiar en cualquier dato que venga del mismo mensaje sospechoso.",
         options: [
           { id: "a1", tool: "cifrado", icon: "🔒", label: "Verificar cifrado (https) y no ingresar datos", quality: 1,
             explain: "Verificar el candado/https es un hábito clave, aunque la regla de oro sigue siendo: no ingresar datos sensibles desde un enlace no verificado." },
