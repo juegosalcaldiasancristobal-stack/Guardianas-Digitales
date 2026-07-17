@@ -210,7 +210,83 @@ body.bg-app {
 .allocate-card .name { font-weight: 700; font-size: 0.88rem; }
 .allocate-card.correct { border-color: #34d399; }
 .allocate-card.incorrect { border-color: #fb7185; }
+.allocate-card.suboptimal { border-color: #fbbf24; background: rgba(251,191,36,0.08); }
 .allocate-card .explain { font-size: 0.76rem; color: #cbd5e1; margin-top: 0.2rem; }
 
 .case-locked { opacity: 0.45; filter: grayscale(0.6); }
 .case-locked button { cursor: not-allowed; }
+
+/* ============================================================
+   NARRACIÓN POR VOZ
+   ============================================================ */
+#btnNarrationToggle.narration-on { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+#btnNarrationToggle.narration-off { background: rgba(255,255,255,0.14); color: #cbd5e1; }
+
+.step-badge {
+  display: inline-flex; align-items: center; font-size: 0.7rem; font-weight: 700;
+  padding: 0.3rem 0.65rem; border-radius: 999px; background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(45,212,191,0.2); color: #94e5df; white-space: nowrap;
+}
+
+/* ============================================================
+   CHROME DE APP SIMULADA (chat / interfaz inspeccionable)
+   ============================================================ */
+.chat-app-header {
+  max-width: 420px; margin: 0 auto -0.15rem; background: #0b1a20; border: 1px solid rgba(45,212,191,0.22);
+  border-bottom: none; border-radius: 0.9rem 0.9rem 0 0; padding: 0.5rem 0.8rem;
+  font-size: 0.68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; color: #67e8f9;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.chat-app-header .dots, .mock-frame-label .dots { display: inline-flex; gap: 0.25rem; }
+.chat-app-header .dots span, .mock-frame-label .dots span {
+  width: 7px; height: 7px; border-radius: 999px; background: rgba(255,255,255,0.2);
+}
+.mock-frame-label { display: flex; align-items: center; gap: 0.5rem; }
+
+/* ============================================================
+   ILUSTRACIÓN DE ESCENA
+   ============================================================ */
+.scene-illustration { position: absolute; top: 0.75rem; right: 0.75rem; width: 84px; height: 84px; opacity: 0.55; pointer-events: none; }
+.scene-illustration svg { width: 100%; height: 100%; }
+#sceneBg { position: relative; }
+
+/* ============================================================
+   TIPS INMEDIATOS TRAS COMPROBAR RESPUESTAS
+   ============================================================ */
+.tip-callout {
+  border-radius: 0.9rem; padding: 0.85rem 1rem; font-size: 0.85rem; line-height: 1.5;
+  border: 1.5px solid; animation: fadeIn .3s ease-out;
+}
+.tip-callout.tip-good { background: rgba(52,211,153,0.1); border-color: rgba(52,211,153,0.4); color: #d1fae5; }
+.tip-callout.tip-warn { background: rgba(251,113,133,0.1); border-color: rgba(251,113,133,0.45); color: #ffe4e6; }
+.tip-callout strong { display: block; margin-bottom: 0.35rem; font-size: 0.9rem; }
+.tip-callout ul { margin: 0.35rem 0 0; padding-left: 1.15rem; list-style: disc; }
+.tip-callout li { margin-bottom: 0.15rem; }
+.tip-callout .tip-hint { display: block; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.15); }
+
+/* ============================================================
+   MICRO-ANIMACIONES DE INTERACTIVIDAD
+   ============================================================ */
+@keyframes shakeX {
+  10%, 90% { transform: translateX(-1px); }
+  20%, 80% { transform: translateX(2px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60% { transform: translateX(4px); }
+}
+.shake-error { animation: shakeX .5s ease-in-out; }
+
+@keyframes popCorrect {
+  0% { transform: scale(1); } 45% { transform: scale(1.05); } 100% { transform: scale(1); }
+}
+.pop-correct { animation: popCorrect .35s ease-out; }
+
+.stat-fill.flash { animation: statFlash .7s ease-out; }
+@keyframes statFlash { 0% { filter: brightness(2.2); } 100% { filter: brightness(1); } }
+
+.confetti-piece {
+  position: fixed; top: -12px; width: 8px; height: 14px; z-index: 600; pointer-events: none;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  to { transform: translateY(110vh) rotate(540deg); opacity: 0.15; }
+}
