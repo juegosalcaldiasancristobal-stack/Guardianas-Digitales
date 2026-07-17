@@ -178,7 +178,7 @@ function stripHtml(html) {
    ============================================================ */
 function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 
-function setNexaMood(mood) { $("#nexaAvatarImg").src = `assets/img/nexa/${mood || "curiosa"}.png`; }
+function setNexaMood(mood) { $("#nexaAvatarImg").src = `assets/img/${mood || "curiosa"}.png`; }
 
 let nexaAutoHideTimer = null;
 function nexaSay(text, mood, opts) {
