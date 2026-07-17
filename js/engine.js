@@ -44,6 +44,7 @@ function showScreen(id) {
   $all("[data-screen]").forEach((s) => s.classList.add("hidden"));
   $(`#${id}`).classList.remove("hidden");
   $(`#${id}`).classList.add("fade-in");
+  $("#nexaCompanion").classList.toggle("hidden", id === "screen-intro");
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -172,6 +173,58 @@ function stripHtml(html) {
   return tmp.textContent.trim();
 }
 
+/* ============================================================
+   NEXA — consejera flotante (personaje de apoyo)
+   ============================================================ */
+function pickRandom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+function setNexaMood(mood) { $("#nexaAvatarImg").src = `assets/img/nexa/${mood || "curiosa"}.png`; }
+
+let nexaAutoHideTimer = null;
+function nexaSay(text, mood, opts) {
+  if (!text) return;
+  setNexaMood(mood);
+  $("#nexaAvatarBtn").classList.remove("attention");
+  $("#nexaPulseDot").classList.add("hidden");
+  $("#nexaBubbleText").textContent = text;
+  $("#nexaBubble").classList.remove("hidden");
+  clearTimeout(nexaAutoHideTimer);
+  if (!(opts && opts.persist)) {
+    nexaAutoHideTimer = setTimeout(() => $("#nexaBubble").classList.add("hidden"), 7000);
+  }
+  if (opts && opts.interrupt) speak(text, { force: true });
+  else queueSpeak(text);
+}
+
+function nexaPing(mood) {
+  setNexaMood(mood);
+  $("#nexaAvatarBtn").classList.add("attention");
+  $("#nexaPulseDot").classList.remove("hidden");
+}
+
+function nexaHideBubble() {
+  $("#nexaBubble").classList.add("hidden");
+  clearTimeout(nexaAutoHideTimer);
+}
+
+$("#nexaAvatarBtn").addEventListener("click", () => {
+  playSound("click");
+  const bubble = $("#nexaBubble");
+  $("#nexaAvatarBtn").classList.remove("attention");
+  $("#nexaPulseDot").classList.add("hidden");
+  if (!bubble.classList.contains("hidden")) { nexaHideBubble(); return; }
+  const node = state.scenario && state.scenario.nodes[state.nodeId];
+  if (node && node.tip) {
+    nexaSay(node.tip, "pensativa", { interrupt: true, persist: true });
+  } else if (!state.nexaIntroduced) {
+    state.nexaIntroduced = true;
+    nexaSay(NEXA_PHRASES.welcome.text, NEXA_PHRASES.welcome.mood, { interrupt: true, persist: true });
+  } else {
+    nexaSay(pickRandom(NEXA_PHRASES.hintGeneric), "curiosa", { interrupt: true, persist: true });
+  }
+});
+$("#nexaBubbleClose").addEventListener("click", nexaHideBubble);
+
 /* ---------------- REGISTRO DE PARTICIPANTE ---------------- */
 const AGE_RANGE_LABELS = {
   menor_15: "Menos de 15",
@@ -251,6 +304,8 @@ $("#startBtn").addEventListener("click", () => {
   saveRegistration();
   renderGuardianaSelect();
   showScreen("screen-select");
+  state.nexaIntroduced = true;
+  setTimeout(() => nexaSay(NEXA_PHRASES.welcome.text, NEXA_PHRASES.welcome.mood, { persist: true }), 700);
 });
 $("#skipToResources").addEventListener("click", () => openResourcesModal());
 $("#quickExitBtn").addEventListener("click", quickExit);
@@ -385,6 +440,7 @@ function renderNode() {
   updateHud(mood);
   clearChatTimers();
   stopSpeaking();
+  nexaHideBubble();
 
   ["choicesWrap", "chatNode", "minigameNode", "inspectNode", "allocateNode", "feedbackWrap"].forEach((id) => $(`#${id}`).classList.add("hidden"));
   $("#choicesWrap").innerHTML = "";
@@ -398,12 +454,12 @@ function renderNode() {
   $("#sceneText").textContent = node.text || "";
   incrementStepCounter();
 
-  if (node.type === "story") { renderStoryNode(node); speak(node.text); }
-  else if (node.type === "choice") { renderChoiceNode(node); speak(node.text); }
-  else if (node.type === "chat") { renderChatNode(node); }
-  else if (node.type === "minigame") { renderMinigameNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
-  else if (node.type === "inspect") { renderInspectNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
-  else if (node.type === "allocate") { renderAllocateNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
+  if (node.type === "story") { renderStoryNode(node); speak(node.text); setNexaMood("curiosa"); }
+  else if (node.type === "choice") { renderChoiceNode(node); speak(node.text); setNexaMood("curiosa"); }
+  else if (node.type === "chat") { renderChatNode(node); setNexaMood("curiosa"); }
+  else if (node.type === "minigame") { renderMinigameNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("pensativa"); }
+  else if (node.type === "inspect") { renderInspectNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("alerta"); }
+  else if (node.type === "allocate") { renderAllocateNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("pensativa"); }
 }
 
 function goTo(nextId) { state.nodeId = nextId; renderNode(); }
@@ -570,6 +626,7 @@ function renderMinigameNode(node) {
       goodMessage: "Identificaste exactamente lo que hacía falta, sin excederte.",
     });
     speak(spoken);
+    nexaSay(pickRandom(isPerfect ? NEXA_PHRASES.checkPerfect : NEXA_PHRASES.checkWrong), isPerfect ? "feliz" : "preocupada");
 
     if (node.mode === "evidencia") {
       state.currentCaseEvidencePerfect = (correctCount === totalFlags && incorrectCount === 0);
@@ -677,6 +734,7 @@ function renderInspectNode(node) {
       goodMessage: "Detectaste exactamente las señales que importaban en esta escena.",
     });
     speak(spoken);
+    nexaSay(pickRandom(isPerfect ? NEXA_PHRASES.checkPerfect : NEXA_PHRASES.checkWrong), isPerfect ? "feliz" : "preocupada");
 
     if (correctCount > 0 && node.achievementOnPerfect && correctCount === totalFlags && incorrectCount === 0) {
       unlockAchievement(node.achievementOnPerfect);
@@ -785,6 +843,7 @@ function renderAllocateNode(node) {
     }
     tipEl.classList.remove("hidden");
     speak(spoken);
+    nexaSay(pickRandom(weakPicks.length === 0 ? NEXA_PHRASES.checkPerfect : NEXA_PHRASES.checkWrong), weakPicks.length === 0 ? "empoderada" : "preocupada");
 
     confirmClone.classList.add("hidden");
     contBtn.classList.remove("hidden");
@@ -803,6 +862,7 @@ function unlockAchievement(id) {
   toast.innerHTML = `<span class="text-lg">${a.icon}</span><span>${a.title}</span>`;
   toast.classList.remove("hidden");
   playSound("achievement");
+  nexaSay(NEXA_PHRASES.achievement, "empoderada");
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.classList.add("hidden"), 3200);
 }
@@ -842,6 +902,10 @@ function computeEnding() {
   speak(`${resolution.title}. ${resolution.text}`);
   playSound(resolutionId === "exito" ? "success" : "click");
   if (resolutionId === "exito") burstConfetti();
+
+  const nexaEndingMood = { exito: "celebrando", parcial: "aliviada", pendiente: "pensativa" }[resolutionId] || "aliviada";
+  const nexaEndingText = { exito: NEXA_PHRASES.endingExito, parcial: NEXA_PHRASES.endingParcial, pendiente: NEXA_PHRASES.endingPendiente }[resolutionId];
+  nexaSay(nexaEndingText, nexaEndingMood, { persist: true });
 
   renderNpcReaction(resolutionId);
   renderAchievements();
