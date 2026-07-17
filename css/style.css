@@ -229,6 +229,34 @@ body.bg-app {
 .case-locked button { cursor: not-allowed; }
 
 /* ============================================================
+   PUZZLE: ORDENAR SECUENCIA — nodo "sequence"
+   ============================================================ */
+.sequence-slots { display: flex; flex-direction: column; gap: 0.5rem; }
+.sequence-slot {
+  display: flex; align-items: center; gap: 0.7rem; min-height: 3rem; padding: 0.5rem 0.9rem;
+  border-radius: 0.85rem; border: 2px dashed rgba(45,212,191,0.3); background: rgba(255,255,255,0.02);
+  font-size: 0.85rem; color: #64748b; transition: all .15s ease;
+}
+.sequence-slot .num {
+  display: flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem; border-radius: 999px;
+  background: rgba(34,211,238,0.15); color: #67e8f9; font-weight: 800; font-size: 0.75rem; flex-shrink: 0;
+}
+.sequence-slot.filled { border-style: solid; border-color: rgba(34,211,238,0.4); color: #ecfeff; background: rgba(34,211,238,0.06); cursor: pointer; }
+.sequence-slot.filled:hover { border-color: rgba(34,211,238,0.65); }
+.sequence-slot.correct { border-color: #34d399; background: rgba(52,211,153,0.14); color: #ecfeff; cursor: default; }
+.sequence-slot.correct .num { background: rgba(52,211,153,0.25); color: #6ee7b7; }
+.sequence-slot.incorrect { border-color: #fb7185; background: rgba(251,113,133,0.14); color: #ecfeff; cursor: default; }
+.sequence-slot.incorrect .num { background: rgba(251,113,133,0.25); color: #fda4af; }
+
+.sequence-pool { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.sequence-chip {
+  padding: 0.6rem 0.9rem; border-radius: 0.85rem; background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(45,212,191,0.25); color: #ecfeff; font-size: 0.85rem; cursor: pointer; transition: all .12s ease;
+}
+.sequence-chip:hover:not(:disabled) { border-color: rgba(34,211,238,0.5); background: rgba(34,211,238,0.08); }
+.sequence-chip:disabled, .sequence-chip.placed { opacity: 0.25; cursor: not-allowed; }
+
+/* ============================================================
    NEXA — consejera flotante
    ============================================================ */
 .nexa-companion {
