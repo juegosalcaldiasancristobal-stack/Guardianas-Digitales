@@ -14,10 +14,16 @@
   <header id="topBar" class="sticky top-0 z-[999] w-full bg-white shadow-lg flex items-center justify-between gap-2 px-3 py-2">
     <img id="headerLogo" src="assets/img/logos-institucionales.png" alt="Alcaldía Mayor de Bogotá D.C · Alcaldía Local de San Cristóbal · Bogotá"
       class="h-8 sm:h-10 w-auto" onerror="this.style.display='none'" />
-    <button id="quickExitBtn" title="Salir de inmediato de esta página"
-      class="flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[11px] sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 transition">
-      <span aria-hidden="true">⨯</span><span class="hidden sm:inline">Salida rápida</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <button id="btnNarrationToggle" title="Activar o silenciar la narración por voz" aria-pressed="true"
+        class="flex items-center gap-1.5 rounded-full text-white text-[11px] sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 transition">
+        <span id="narrationIcon" aria-hidden="true">🔊</span><span class="hidden sm:inline">Narración</span>
+      </button>
+      <button id="quickExitBtn" title="Salir de inmediato de esta página"
+        class="flex items-center gap-1.5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[11px] sm:text-sm font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 transition">
+        <span aria-hidden="true">⨯</span><span class="hidden sm:inline">Salida rápida</span>
+      </button>
+    </div>
   </header>
 
   <div id="achievementToast" class="achievement-toast hidden"></div>
@@ -140,6 +146,8 @@
           <div class="stat-chip" title="Ciudadanía digital"><span>🎓</span><div class="stat-bar"><div id="barCiudadaniaGame" class="stat-fill bg-teal-400"></div></div></div>
         </div>
         <div class="flex items-center gap-1.5">
+          <span id="stepCounterBadge" class="step-badge"></span>
+          <button id="btnReplayNarration" class="btn-ghost text-xs sm:text-sm" title="Repetir narración de esta escena">🔁</button>
           <button id="btnToolkit" class="btn-ghost text-xs sm:text-sm">🧰 Kit</button>
           <button id="btnResources" class="btn-ghost text-xs sm:text-sm">📖 Rutas</button>
           <button id="btnMenu" class="btn-ghost text-xs sm:text-sm">☰</button>
@@ -148,6 +156,7 @@
 
       <div id="sceneWrap" class="card overflow-hidden">
         <div id="sceneBg" class="scene-bg px-5 py-8 sm:px-9 sm:py-12 min-h-[220px] flex flex-col sm:flex-row sm:items-end gap-4 transition-all duration-500">
+          <div id="sceneIllustration" class="scene-illustration" aria-hidden="true"></div>
           <div id="scenePortrait" class="portrait-wrap shrink-0"></div>
           <div class="max-w-2xl">
             <p id="speakerName" class="text-xs font-bold uppercase tracking-wider text-cyan-300 mb-1.5"></p>
@@ -158,6 +167,7 @@
         <div id="choicesWrap" class="p-4 sm:p-5 space-y-2.5 bg-slate-900/70"></div>
 
         <div id="chatNode" class="hidden p-4 sm:p-5 bg-slate-900/70">
+          <div id="chatHeader" class="chat-app-header"></div>
           <div id="chatBubbles" class="chat-phone space-y-2"></div>
           <button id="chatContinueBtn" class="btn-primary w-full sm:w-auto mt-3 hidden">Continuar →</button>
         </div>
@@ -165,6 +175,7 @@
         <div id="minigameNode" class="hidden p-4 sm:p-5 bg-slate-900/70 space-y-3">
           <p id="minigameInstructions" class="text-sm text-slate-300"></p>
           <div id="minigameItems" class="space-y-2"></div>
+          <div id="minigameTip" class="tip-callout hidden"></div>
           <div class="flex gap-2.5 flex-wrap">
             <button id="minigameCheckBtn" class="btn-primary">Comprobar ✓</button>
             <button id="minigameContinueBtn" class="btn-ghost hidden">Continuar →</button>
@@ -174,6 +185,7 @@
         <div id="inspectNode" class="hidden p-4 sm:p-5 bg-slate-900/70 space-y-3">
           <p id="inspectInstructions" class="text-sm text-slate-300"></p>
           <div id="inspectFrame" class="mock-frame"></div>
+          <div id="inspectTip" class="tip-callout hidden"></div>
           <div class="flex gap-2.5 flex-wrap">
             <button id="inspectCheckBtn" class="btn-primary">Comprobar ✓</button>
             <button id="inspectContinueBtn" class="btn-ghost hidden">Continuar →</button>
@@ -184,6 +196,7 @@
           <p id="allocateInstructions" class="text-sm text-slate-300"></p>
           <div id="allocateCounter" class="allocate-counter"></div>
           <div id="allocateGrid" class="allocate-grid"></div>
+          <div id="allocateTip" class="tip-callout hidden"></div>
           <div class="flex gap-2.5 flex-wrap">
             <button id="allocateConfirmBtn" class="btn-primary" disabled>Confirmar plan ✓</button>
             <button id="allocateContinueBtn" class="btn-ghost hidden">Continuar →</button>
@@ -275,106 +288,17 @@
   </div>
 
   <!-- Scripts clásicos (no type="module") a propósito: deben abrir con doble clic, sin servidor. -->
-  <script src="js/avatars.js?v=6"></script>
-  <script src="js/data/world/resources.js?v=6"></script>
-  <script src="js/data/world/toolkit.js?v=6"></script>
-  <script src="js/data/world/npcs.js?v=6"></script>
-  <script src="js/data/platforms.js?v=6"></script>
-  <script src="js/data/achievements.js?v=6"></script>
-  <script src="js/data/endings.js?v=6"></script>
-  <script src="js/data/debrief.js?v=6"></script>
-  <script src="js/data/guardianas/valentina.js?v=6"></script>
-  <script src="js/data/guardianas/sofia.js?v=6"></script>
-  <script src="js/data/guardianas/index.js?v=6"></script>
-  <script src="js/engine.js?v=6"></script>
-
-  <script>
-  /* ===== REGISTRO SHEETS - Guardianas Digitales ===== */
-  (function(){
-    var EP = "https://script.google.com/macros/s/AKfycbwFRBcEjMcmtgYJQ2l8M9cT6hgW9LVLT7_uJ0o5pCKYLoq-IOnkfk-_2Qs0lQxg_VKZ/exec";
-
-    /* ---- Toast ---- */
-    function toast(msg, color){
-      var t = document.createElement("div");
-      t.textContent = msg;
-      t.style.cssText = "position:fixed;bottom:1.5rem;right:1.5rem;z-index:999999;"+
-        "background:"+(color||"#0d9488")+";color:#fff;font-family:system-ui,sans-serif;"+
-        "font-size:.875rem;font-weight:600;padding:.7rem 1.1rem;border-radius:.6rem;"+
-        "box-shadow:0 4px 20px rgba(0,0,0,.4);max-width:320px;line-height:1.3";
-      document.body.appendChild(t);
-      setTimeout(function(){ t.style.transition="opacity .6s"; t.style.opacity="0"; },3500);
-      setTimeout(function(){ t.remove(); },4200);
-    }
-
-    /* ---- Envío con CORS real para ver errores del Apps Script ----
-       Intentamos con fetch normal (con CORS).
-       Si el servidor bloquea CORS, reintentamos con no-cors
-       (en ese caso ya sabemos que el endpoint existe pero
-       no podemos leer la respuesta). */
-    function enviar(d){
-      console.info("[Sheets GD] Enviando:", JSON.stringify(d));
-
-      fetch(EP, {
-        method : "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body   : JSON.stringify(d)
-      })
-      .then(function(res){
-        return res.text().then(function(txt){
-          console.info("[Sheets GD] Respuesta HTTP", res.status, ":", txt);
-          try {
-            var j = JSON.parse(txt);
-            if (j.ok) {
-              toast("Registro guardado correctamente");
-            } else {
-              toast("Apps Script error: " + (j.error || j.msg || txt), "#dc2626");
-              console.error("[Sheets GD] Error del script:", j);
-            }
-          } catch(e){
-            /* Respuesta no-JSON: igual hubo conexion */
-            toast("Registro guardado correctamente");
-            console.info("[Sheets GD] Respuesta texto:", txt);
-          }
-        });
-      })
-      .catch(function(err){
-        /* Error de red o CORS — reintentar con no-cors */
-        console.warn("[Sheets GD] CORS bloqueado, reintentando no-cors:", err.message);
-        fetch(EP, { method:"POST", mode:"no-cors", body:JSON.stringify(d) })
-          .then(function(){ toast("Enviado (no-cors — verifica el Sheet)"); })
-          .catch(function(e2){ toast("Sin conexion: "+e2.message, "#dc2626"); });
-      });
-    }
-
-    /* ---- Listener en startBtn ---- */
-    document.addEventListener("DOMContentLoaded", function(){
-      var btn = document.getElementById("startBtn");
-      if (!btn){ console.error("[Sheets GD] #startBtn no encontrado"); return; }
-
-      btn.addEventListener("click", function(){
-        var nom  = (document.getElementById("regFullName") ? document.getElementById("regFullName").value  : "").trim();
-        var mail = (document.getElementById("regEmail")    ? document.getElementById("regEmail").value     : "").trim();
-        var edad =  document.getElementById("regAgeRange") ? document.getElementById("regAgeRange").value  : "";
-
-        if (!nom && !edad){
-          console.warn("[Sheets GD] Sin datos — no se envía");
-          return;
-        }
-        enviar({
-          evento  : "registro",
-          juego   : "Guardianas Digitales",
-          nombre  : nom,
-          correo  : mail,
-          edad    : edad,
-          modo    : "individual",
-          completo: false
-        });
-      });
-      console.info("[Sheets GD] Listener activo");
-    });
-
-  })();
-  </script>
-
+  <script src="js/avatars.js?v=7"></script>
+  <script src="js/data/world/resources.js?v=7"></script>
+  <script src="js/data/world/toolkit.js?v=7"></script>
+  <script src="js/data/world/npcs.js?v=7"></script>
+  <script src="js/data/platforms.js?v=7"></script>
+  <script src="js/data/achievements.js?v=7"></script>
+  <script src="js/data/endings.js?v=7"></script>
+  <script src="js/data/debrief.js?v=7"></script>
+  <script src="js/data/guardianas/valentina.js?v=7"></script>
+  <script src="js/data/guardianas/sofia.js?v=7"></script>
+  <script src="js/data/guardianas/index.js?v=7"></script>
+  <script src="js/engine.js?v=7"></script>
 </body>
 </html>
