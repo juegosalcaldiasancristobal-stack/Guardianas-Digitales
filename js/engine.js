@@ -442,7 +442,7 @@ function renderNode() {
   stopSpeaking();
   nexaHideBubble();
 
-  ["choicesWrap", "chatNode", "minigameNode", "inspectNode", "allocateNode", "feedbackWrap"].forEach((id) => $(`#${id}`).classList.add("hidden"));
+  ["choicesWrap", "chatNode", "minigameNode", "inspectNode", "allocateNode", "sequenceNode", "feedbackWrap"].forEach((id) => $(`#${id}`).classList.add("hidden"));
   $("#choicesWrap").innerHTML = "";
 
   if (node.bg) $("#sceneBg").style.background = BG_STYLES[node.bg] || BG_STYLES["scene-room"];
@@ -460,6 +460,7 @@ function renderNode() {
   else if (node.type === "minigame") { renderMinigameNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("pensativa"); }
   else if (node.type === "inspect") { renderInspectNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("alerta"); }
   else if (node.type === "allocate") { renderAllocateNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("pensativa"); }
+  else if (node.type === "sequence") { renderSequenceNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); nexaPing("pensativa"); }
 }
 
 function goTo(nextId) { state.nodeId = nextId; renderNode(); }
@@ -846,6 +847,112 @@ function renderAllocateNode(node) {
     nexaSay(pickRandom(weakPicks.length === 0 ? NEXA_PHRASES.checkPerfect : NEXA_PHRASES.checkWrong), weakPicks.length === 0 ? "empoderada" : "preocupada");
 
     confirmClone.classList.add("hidden");
+    contBtn.classList.remove("hidden");
+    const contClone = contBtn.cloneNode(true);
+    contBtn.parentNode.replaceChild(contClone, contBtn);
+    contClone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
+  });
+}
+
+/* ---------------- PUZZLE: ORDENAR SECUENCIA (toca para colocar) ---------------- */
+function renderSequenceTip(tipEl, { isPerfect, correctCount, total, tip }) {
+  let spoken;
+  if (isPerfect) {
+    tipEl.className = "tip-callout tip-good";
+    tipEl.innerHTML = `<strong>✅ ¡Orden perfecto!</strong>Pusiste cada paso exactamente donde más ayuda.`;
+    spoken = "Orden perfecto. Pusiste cada paso exactamente donde más ayuda.";
+  } else {
+    tipEl.className = "tip-callout tip-warn";
+    let html = `<strong>📌 El orden importa</strong><p>Acertaste ${correctCount} de ${total} posiciones — los pasos en verde ya están bien ubicados, los que quedaron en rojo necesitan otro lugar.</p>`;
+    spoken = `Acertaste ${correctCount} de ${total} posiciones. Los pasos marcados en rojo necesitan otro lugar.`;
+    if (tip) { html += `<div class="tip-hint">💡 <strong>Tip:</strong> ${tip}</div>`; spoken += ` Tip: ${tip}`; }
+    tipEl.innerHTML = html;
+  }
+  tipEl.classList.remove("hidden");
+  return spoken;
+}
+
+function renderSequenceNode(node) {
+  $("#sequenceNode").classList.remove("hidden");
+  $("#sequenceInstructions").textContent = node.instructions;
+  const slotsWrap = $("#sequenceSlots");
+  const poolWrap = $("#sequencePool");
+  const tipEl = $("#sequenceTip");
+  tipEl.classList.add("hidden");
+  let checked = false;
+  let placed = [];
+  const shuffled = [...node.items].sort(() => Math.random() - 0.5);
+
+  function renderSlots() {
+    slotsWrap.innerHTML = "";
+    node.items.forEach((_, i) => {
+      const itemId = placed[i];
+      const item = itemId ? node.items.find((it) => it.id === itemId) : null;
+      const slot = document.createElement("div");
+      slot.className = "sequence-slot" + (item ? " filled" : "");
+      slot.innerHTML = `<span class="num">${i + 1}</span><span>${item ? item.text : ""}</span>`;
+      if (item && !checked) {
+        slot.addEventListener("click", () => {
+          playSound("click");
+          placed.splice(i, 1);
+          renderSlots();
+          renderPool();
+          $("#sequenceCheckBtn").disabled = placed.length !== node.items.length;
+        });
+      }
+      slotsWrap.appendChild(slot);
+    });
+  }
+  function renderPool() {
+    poolWrap.innerHTML = "";
+    shuffled.forEach((item) => {
+      const isPlaced = placed.includes(item.id);
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "sequence-chip" + (isPlaced ? " placed" : "");
+      btn.textContent = item.text;
+      btn.disabled = isPlaced || checked;
+      btn.addEventListener("click", () => {
+        if (checked || placed.length >= node.items.length) return;
+        playSound("click");
+        placed.push(item.id);
+        renderSlots();
+        renderPool();
+        $("#sequenceCheckBtn").disabled = placed.length !== node.items.length;
+      });
+      poolWrap.appendChild(btn);
+    });
+  }
+  renderSlots();
+  renderPool();
+
+  const checkBtn = $("#sequenceCheckBtn");
+  const contBtn = $("#sequenceContinueBtn");
+  checkBtn.disabled = true;
+  checkBtn.classList.remove("hidden");
+  contBtn.classList.add("hidden");
+  const checkClone = checkBtn.cloneNode(true);
+  checkBtn.parentNode.replaceChild(checkClone, checkBtn);
+  checkClone.addEventListener("click", () => {
+    checked = true;
+    let correctCount = 0;
+    node.items.forEach((_, i) => { if (placed[i] === node.order[i]) correctCount++; });
+    renderSlots();
+    Array.from(slotsWrap.children).forEach((slotEl, i) => {
+      slotEl.classList.add(placed[i] === node.order[i] ? "correct" : "incorrect");
+    });
+    renderPool();
+
+    const isPerfect = correctCount === node.items.length;
+    playSound(isPerfect ? "correct" : "incorrect");
+    const spoken = renderSequenceTip(tipEl, { isPerfect, correctCount, total: node.items.length, tip: node.tip });
+    speak(spoken);
+    nexaSay(pickRandom(isPerfect ? NEXA_PHRASES.checkPerfect : NEXA_PHRASES.checkWrong), isPerfect ? "empoderada" : "preocupada");
+
+    if (isPerfect) unlockAchievement("pensamiento_estrategico");
+    if (correctCount > 0) { state.stats.ciudadania = clamp(state.stats.ciudadania + correctCount * 3); updateHud(); }
+
+    checkClone.classList.add("hidden");
     contBtn.classList.remove("hidden");
     const contClone = contBtn.cloneNode(true);
     contBtn.parentNode.replaceChild(contClone, contBtn);
