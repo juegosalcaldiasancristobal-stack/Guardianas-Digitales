@@ -152,23 +152,18 @@ function burstConfetti() {
 }
 
 /* ============================================================
-   ILUSTRACIÓN DE ESCENA (SVG generado, tono según el ambiente)
+   ILUSTRACIÓN DE ESCENA (SVG temático según el tipo de amenaza)
    ============================================================ */
-const SCENE_ILLUSTRATION_COLOR = {
+const SCENE_MOOD_COLOR = {
   "scene-room": "#22d3ee",
   "scene-tension": "#fb7185",
   "scene-night": "#818cf8",
   "scene-street-day": "#34d399",
 };
 function renderSceneIllustration(bgKey) {
-  const color = SCENE_ILLUSTRATION_COLOR[bgKey] || SCENE_ILLUSTRATION_COLOR["scene-room"];
-  $("#sceneIllustration").innerHTML = `
-    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <path d="M50 6 L88 20 V48 C88 72 71 88 50 96 C29 88 12 72 12 48 V20 Z" stroke="${color}" stroke-width="4" fill="${color}" fill-opacity="0.12"/>
-      <path d="M32 50 Q50 30 68 50" stroke="${color}" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.85"/>
-      <path d="M40 60 Q50 50 60 60" stroke="${color}" stroke-width="4" stroke-linecap="round" fill="none"/>
-      <circle cx="50" cy="70" r="4" fill="${color}"/>
-    </svg>`;
+  const theme = state.currentTheme || "default";
+  const color = THEME_COLORS[theme] || SCENE_MOOD_COLOR[bgKey] || SCENE_MOOD_COLOR["scene-room"];
+  $("#sceneIllustration").innerHTML = sceneIllustrationSVG(theme, color);
 }
 
 function stripHtml(html) {
@@ -315,6 +310,7 @@ function renderCaseBoard() {
     const el = document.createElement("div");
     el.className = "case-card" + (solved ? " solved" : "") + (locked ? " case-locked" : "");
     el.innerHTML = `
+      <div class="case-card-illu" aria-hidden="true">${sceneIllustrationSVG(c.theme || "default", THEME_COLORS[c.theme || "default"])}</div>
       <span class="platform-badge">${platform.icon} ${platform.name}</span>
       <p class="font-bold mt-2">${locked ? "🔒 " : ""}${c.title} ${solved ? "✅" : ""}</p>
       <p class="text-sm text-slate-300 mt-1.5 leading-relaxed">${locked ? `Resuelve "${requiredTitle}" primero para desbloquear este caso.` : c.brief}</p>
@@ -337,6 +333,7 @@ function startCase(c) {
   state.lastResolution = null;
   state.lastMood = null;
   state.stepCount = 0;
+  state.currentTheme = c.theme || "default";
 
   $("#hudName").textContent = state.guardiana.name + " · " + c.title;
   $("#hudScenario").textContent = (PLATFORMS[c.platform] || {}).name || "";
@@ -482,7 +479,20 @@ function renderChatNode(node) {
   bubbles.innerHTML = "";
   $("#chatContinueBtn").classList.add("hidden");
   node.messages.forEach((msg, i) => {
+    const typingAt = i * 900;
+    const msgAt = i * 900 + 500;
+    const t0 = setTimeout(() => {
+      const typing = document.createElement("div");
+      typing.className = `chat-bubble ${msg.from === "me" ? "me" : "them"} typing-indicator`;
+      typing.innerHTML = `<span></span><span></span><span></span>`;
+      bubbles.appendChild(typing);
+      bubbles.scrollTop = bubbles.scrollHeight;
+    }, typingAt);
+    state.chatTimers.push(t0);
+
     const t = setTimeout(() => {
+      const typingEl = bubbles.querySelector(".typing-indicator");
+      if (typingEl) typingEl.remove();
       const div = document.createElement("div");
       div.className = `chat-bubble ${msg.from === "me" ? "me" : "them"}`;
       div.textContent = msg.text;
@@ -497,7 +507,7 @@ function renderChatNode(node) {
         contBtn.parentNode.replaceChild(clone, contBtn);
         clone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
       }
-    }, i * 900);
+    }, msgAt);
     state.chatTimers.push(t);
   });
 }
