@@ -71,6 +71,18 @@ const sofiaScenarios = {
           { id: "e4", text: "Captura de comentarios ofensivos de otras personas en el grupo", isFlag: false,
             explain: "Aunque duelan, esos comentarios no son evidencia del delito principal — enfocar la evidencia ayuda a que la denuncia sea más clara y efectiva." },
         ],
+        next: "s3b" },
+
+      s3b: { type: "sequence", speaker: "🧩 Ordena los pasos para actuar con calma", mood: "preocupada", bg: "scene-room",
+        instructions: "Ordena estas acciones en el orden en que deberían hacerse, del 1 (primero) al 4 (último).",
+        tip: "Acompañar primero, sin juzgar, hace que la persona afectada confíe en seguir el proceso contigo — la evidencia y la denuncia formal vienen después, con más calma.",
+        items: [
+          { id: "sq1", text: "Escuchar y acompañar a Camila sin juzgarla." },
+          { id: "sq2", text: "Verificar si la publicación sigue activa." },
+          { id: "sq3", text: "Guardar evidencia: captura, fecha y enlace." },
+          { id: "sq4", text: "Denunciar formalmente con la evidencia lista." },
+        ],
+        order: ["sq1", "sq2", "sq3", "sq4"],
         next: "choice1" },
 
       choice1: { type: "allocate", speaker: "Sofía — Arma tu plan de acción", mood: "preocupada", text:
@@ -149,6 +161,18 @@ const sofiaScenarios = {
           { id: "e4", text: "Reenviar el enlace al grupo del curso 'para que opinen'", isFlag: false,
             explain: "Reenviar el enlace, aunque sea con buena intención, multiplica el riesgo de que alguien más haga clic. Mejor describir la señal de alerta sin compartir el enlace en sí." },
         ],
+        next: "ph4b" },
+
+      ph4b: { type: "sequence", speaker: "🧩 Ordena los pasos frente a un mensaje sospechoso", mood: "preocupada", bg: "scene-room",
+        instructions: "Ordena estas acciones en el orden correcto para reaccionar frente a un posible phishing.",
+        tip: "La urgencia es la primera trampa del phishing — frenar antes de hacer clic te da tiempo para verificar con calma.",
+        items: [
+          { id: "sq1", text: "No hacer clic de inmediato, aunque el mensaje dé prisa." },
+          { id: "sq2", text: "Revisar el enlace y el remitente con cuidado." },
+          { id: "sq3", text: "Confirmar por un canal oficial aparte (llamar, escribir directo)." },
+          { id: "sq4", text: "Reportar el mensaje si resulta ser falso." },
+        ],
+        order: ["sq1", "sq2", "sq3", "sq4"],
         next: "choice1" },
 
       choice1: { type: "allocate", speaker: "Sofía — Arma tu plan de acción", mood: "preocupada", text:
