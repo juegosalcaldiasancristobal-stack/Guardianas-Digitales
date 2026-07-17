@@ -28,6 +28,18 @@
 
   <div id="achievementToast" class="achievement-toast hidden"></div>
 
+  <!-- ============ NEXA: CONSEJERA FLOTANTE ============ -->
+  <div id="nexaCompanion" class="nexa-companion hidden">
+    <div id="nexaBubble" class="nexa-bubble hidden">
+      <button id="nexaBubbleClose" class="nexa-bubble-close" aria-label="Cerrar mensaje de Nexa">✕</button>
+      <p id="nexaBubbleText"></p>
+    </div>
+    <button id="nexaAvatarBtn" class="nexa-avatar-btn" title="Nexa, tu consejera de seguridad digital — toca para una pista">
+      <img id="nexaAvatarImg" src="assets/img/nexa/curiosa.png" alt="Nexa, tu consejera de seguridad digital" />
+      <span id="nexaPulseDot" class="nexa-pulse-dot hidden"></span>
+    </button>
+  </div>
+
   <div id="app" class="relative mx-auto min-h-screen w-full max-w-5xl px-3 sm:px-6 pb-10">
 
     <!-- ============ PANTALLA: PORTADA ============ -->
@@ -289,18 +301,19 @@
   </div>
 
   <!-- Scripts clásicos (no type="module") a propósito: deben abrir con doble clic, sin servidor. -->
-  <script src="js/avatars.js?v=8"></script>
-  <script src="js/illustrations.js?v=8"></script>
-  <script src="js/data/world/resources.js?v=8"></script>
-  <script src="js/data/world/toolkit.js?v=8"></script>
-  <script src="js/data/world/npcs.js?v=8"></script>
-  <script src="js/data/platforms.js?v=8"></script>
-  <script src="js/data/achievements.js?v=8"></script>
-  <script src="js/data/endings.js?v=8"></script>
-  <script src="js/data/debrief.js?v=8"></script>
-  <script src="js/data/guardianas/valentina.js?v=8"></script>
-  <script src="js/data/guardianas/sofia.js?v=8"></script>
-  <script src="js/data/guardianas/index.js?v=8"></script>
-  <script src="js/engine.js?v=8"></script>
+  <script src="js/avatars.js?v=9"></script>
+  <script src="js/illustrations.js?v=9"></script>
+  <script src="js/data/world/resources.js?v=9"></script>
+  <script src="js/data/world/toolkit.js?v=9"></script>
+  <script src="js/data/world/npcs.js?v=9"></script>
+  <script src="js/data/platforms.js?v=9"></script>
+  <script src="js/data/achievements.js?v=9"></script>
+  <script src="js/data/endings.js?v=9"></script>
+  <script src="js/data/debrief.js?v=9"></script>
+  <script src="js/data/nexa.js?v=9"></script>
+  <script src="js/data/guardianas/valentina.js?v=9"></script>
+  <script src="js/data/guardianas/sofia.js?v=9"></script>
+  <script src="js/data/guardianas/index.js?v=9"></script>
+  <script src="js/engine.js?v=9"></script>
 </body>
 </html>
