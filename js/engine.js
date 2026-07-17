@@ -47,6 +47,136 @@ function showScreen(id) {
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
+/* ============================================================
+   NARRACIÓN POR VOZ (accesibilidad para quienes no pueden leer)
+   ============================================================ */
+const NARRATION_KEY = "guardianasDigitalesNarracion";
+state.narrationEnabled = localStorage.getItem(NARRATION_KEY) !== "off";
+state.lastSpokenText = "";
+let spanishVoice = null;
+
+function pickSpanishVoice() {
+  if (!("speechSynthesis" in window)) return null;
+  const voices = speechSynthesis.getVoices();
+  return voices.find((v) => /^es[-_]CO/i.test(v.lang))
+    || voices.find((v) => /^es/i.test(v.lang))
+    || null;
+}
+if ("speechSynthesis" in window) {
+  spanishVoice = pickSpanishVoice();
+  speechSynthesis.onvoiceschanged = () => { spanishVoice = pickSpanishVoice(); };
+}
+
+function speak(text, opts) {
+  if (!text) return;
+  state.lastSpokenText = text;
+  const force = opts && opts.force;
+  if ((!state.narrationEnabled && !force) || !("speechSynthesis" in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  if (spanishVoice) u.voice = spanishVoice;
+  u.rate = 0.98;
+  speechSynthesis.speak(u);
+}
+function queueSpeak(text) {
+  if (!text || !state.narrationEnabled || !("speechSynthesis" in window)) return;
+  const u = new SpeechSynthesisUtterance(text);
+  if (spanishVoice) u.voice = spanishVoice;
+  u.rate = 0.98;
+  speechSynthesis.speak(u);
+}
+function stopSpeaking() { if ("speechSynthesis" in window) speechSynthesis.cancel(); }
+
+function setNarrationEnabled(on) {
+  state.narrationEnabled = on;
+  localStorage.setItem(NARRATION_KEY, on ? "on" : "off");
+  const btn = $("#btnNarrationToggle");
+  btn.classList.toggle("narration-on", on);
+  btn.classList.toggle("narration-off", !on);
+  btn.setAttribute("aria-pressed", String(on));
+  $("#narrationIcon").textContent = on ? "🔊" : "🔇";
+  if (!on) stopSpeaking();
+}
+setNarrationEnabled(state.narrationEnabled);
+$("#btnNarrationToggle").addEventListener("click", () => setNarrationEnabled(!state.narrationEnabled));
+$("#btnReplayNarration").addEventListener("click", () => speak(state.lastSpokenText, { force: true }));
+
+/* ============================================================
+   SONIDO (efectos generados, sin archivos externos)
+   ============================================================ */
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+function playTone(freq, duration, type, gainPeak, delay) {
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || "sine";
+  osc.frequency.value = freq;
+  const t0 = ctx.currentTime + (delay || 0);
+  gain.gain.setValueAtTime(0, t0);
+  gain.gain.linearRampToValueAtTime(gainPeak || 0.1, t0 + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.001, t0 + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(t0);
+  osc.stop(t0 + duration + 0.02);
+}
+function playSound(name) {
+  switch (name) {
+    case "click": playTone(520, 0.06, "sine", 0.05); break;
+    case "correct": playTone(660, 0.12, "sine", 0.09); playTone(880, 0.14, "sine", 0.08, 0.08); break;
+    case "incorrect": playTone(180, 0.22, "sawtooth", 0.06); break;
+    case "achievement": playTone(660, 0.1, "sine", 0.08); playTone(880, 0.12, "sine", 0.08, 0.09); playTone(1100, 0.18, "sine", 0.09, 0.18); break;
+    case "success": playTone(523, 0.12, "sine", 0.08); playTone(659, 0.12, "sine", 0.08, 0.1); playTone(784, 0.2, "sine", 0.09, 0.2); break;
+  }
+}
+function burstConfetti() {
+  const colors = ["#22d3ee", "#34d399", "#fbbf24", "#f472b6", "#a78bfa"];
+  for (let i = 0; i < 24; i++) {
+    const el = document.createElement("div");
+    el.className = "confetti-piece";
+    el.style.left = Math.random() * 100 + "vw";
+    el.style.background = colors[i % colors.length];
+    el.style.animationDuration = (1.6 + Math.random() * 1.2) + "s";
+    el.style.animationDelay = (Math.random() * 0.3) + "s";
+    document.body.appendChild(el);
+    setTimeout(() => el.remove(), 3200);
+  }
+}
+
+/* ============================================================
+   ILUSTRACIÓN DE ESCENA (SVG generado, tono según el ambiente)
+   ============================================================ */
+const SCENE_ILLUSTRATION_COLOR = {
+  "scene-room": "#22d3ee",
+  "scene-tension": "#fb7185",
+  "scene-night": "#818cf8",
+  "scene-street-day": "#34d399",
+};
+function renderSceneIllustration(bgKey) {
+  const color = SCENE_ILLUSTRATION_COLOR[bgKey] || SCENE_ILLUSTRATION_COLOR["scene-room"];
+  $("#sceneIllustration").innerHTML = `
+    <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <path d="M50 6 L88 20 V48 C88 72 71 88 50 96 C29 88 12 72 12 48 V20 Z" stroke="${color}" stroke-width="4" fill="${color}" fill-opacity="0.12"/>
+      <path d="M32 50 Q50 30 68 50" stroke="${color}" stroke-width="4" stroke-linecap="round" fill="none" opacity="0.85"/>
+      <path d="M40 60 Q50 50 60 60" stroke="${color}" stroke-width="4" stroke-linecap="round" fill="none"/>
+      <circle cx="50" cy="70" r="4" fill="${color}"/>
+    </svg>`;
+}
+
+function stripHtml(html) {
+  const tmp = document.createElement("div");
+  tmp.innerHTML = html;
+  return tmp.textContent.trim();
+}
+
 /* ---------------- REGISTRO DE PARTICIPANTE ---------------- */
 const AGE_RANGE_LABELS = {
   menor_15: "Menos de 15",
@@ -206,6 +336,7 @@ function startCase(c) {
   state.currentCaseEvidencePerfect = false;
   state.lastResolution = null;
   state.lastMood = null;
+  state.stepCount = 0;
 
   $("#hudName").textContent = state.guardiana.name + " · " + c.title;
   $("#hudScenario").textContent = (PLATFORMS[c.platform] || {}).name || "";
@@ -230,37 +361,52 @@ function setAvatarMood(mood) {
     });
   }
 }
+let prevGameStats = null;
 function updateHud(mood) {
-  $("#barProteccionGame").style.width = clamp(state.stats.proteccion) + "%";
-  $("#barComunidadGame").style.width = clamp(state.stats.comunidad) + "%";
-  $("#barCiudadaniaGame").style.width = clamp(state.stats.ciudadania) + "%";
+  const keys = { proteccion: "barProteccionGame", comunidad: "barComunidadGame", ciudadania: "barCiudadaniaGame" };
+  Object.entries(keys).forEach(([key, id]) => {
+    const val = clamp(state.stats[key]);
+    const el = $(`#${id}`);
+    const increased = prevGameStats && val > prevGameStats[key];
+    el.style.width = val + "%";
+    if (increased) { el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); }
+  });
+  prevGameStats = { proteccion: clamp(state.stats.proteccion), comunidad: clamp(state.stats.comunidad), ciudadania: clamp(state.stats.ciudadania) };
   updateCaseHud();
   if (mood) setAvatarMood(mood);
 }
 
 /* ---------------- RENDER NODOS ---------------- */
+function incrementStepCounter() {
+  state.stepCount = (state.stepCount || 0) + 1;
+  $("#stepCounterBadge").textContent = `Paso ${state.stepCount}`;
+}
+
 function renderNode() {
   const node = state.scenario.nodes[state.nodeId];
   const mood = node.mood || "tranquila";
   updateHud(mood);
   clearChatTimers();
+  stopSpeaking();
 
   ["choicesWrap", "chatNode", "minigameNode", "inspectNode", "allocateNode", "feedbackWrap"].forEach((id) => $(`#${id}`).classList.add("hidden"));
   $("#choicesWrap").innerHTML = "";
 
   if (node.bg) $("#sceneBg").style.background = BG_STYLES[node.bg] || BG_STYLES["scene-room"];
+  renderSceneIllustration(node.bg);
 
   if (node.type === "end") { computeEnding(); return; }
 
   $("#speakerName").textContent = node.speaker || "";
   $("#sceneText").textContent = node.text || "";
+  incrementStepCounter();
 
-  if (node.type === "story") renderStoryNode(node);
-  else if (node.type === "choice") renderChoiceNode(node);
-  else if (node.type === "chat") renderChatNode(node);
-  else if (node.type === "minigame") renderMinigameNode(node);
-  else if (node.type === "inspect") renderInspectNode(node);
-  else if (node.type === "allocate") renderAllocateNode(node);
+  if (node.type === "story") { renderStoryNode(node); speak(node.text); }
+  else if (node.type === "choice") { renderChoiceNode(node); speak(node.text); }
+  else if (node.type === "chat") { renderChatNode(node); }
+  else if (node.type === "minigame") { renderMinigameNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
+  else if (node.type === "inspect") { renderInspectNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
+  else if (node.type === "allocate") { renderAllocateNode(node); speak([node.text, node.instructions].filter(Boolean).join(". ")); }
 }
 
 function goTo(nextId) { state.nodeId = nextId; renderNode(); }
@@ -270,7 +416,7 @@ function renderStoryNode(node) {
   const btn = document.createElement("button");
   btn.className = "choice-btn text-center font-semibold";
   btn.textContent = "Continuar →";
-  btn.addEventListener("click", () => goTo(node.next));
+  btn.addEventListener("click", () => { playSound("click"); goTo(node.next); });
   $("#choicesWrap").appendChild(btn);
 }
 
@@ -280,7 +426,7 @@ function renderChoiceNode(node) {
     const btn = document.createElement("button");
     btn.className = "choice-btn";
     btn.innerHTML = `<span class="tag">${ch.tag}</span>${ch.text}`;
-    btn.addEventListener("click", () => applyChoice(ch));
+    btn.addEventListener("click", () => { playSound("click"); applyChoice(ch); });
     $("#choicesWrap").appendChild(btn);
   });
 }
@@ -317,10 +463,11 @@ function showFeedback(text, next) {
   $("#feedbackText").textContent = text;
   $("#feedbackWrap").classList.remove("hidden");
   $("#choicesWrap").classList.add("hidden");
+  speak(text);
   const btn = $("#feedbackContinueBtn");
   const clone = btn.cloneNode(true);
   btn.parentNode.replaceChild(clone, btn);
-  clone.addEventListener("click", () => goTo(next));
+  clone.addEventListener("click", () => { playSound("click"); goTo(next); });
 }
 
 /* ---------------- CHAT ---------------- */
@@ -328,6 +475,9 @@ function clearChatTimers() { state.chatTimers.forEach((t) => clearTimeout(t)); s
 
 function renderChatNode(node) {
   $("#chatNode").classList.remove("hidden");
+  const currentCase = (CASES_BY_GUARDIANA[state.guardiana.id] || []).find((c) => c.id === state.currentCaseId);
+  const platform = currentCase ? PLATFORMS[currentCase.platform] : null;
+  $("#chatHeader").innerHTML = `<span class="dots"><span></span><span></span><span></span></span>${platform ? platform.icon + " " + platform.name : "💬 Chat"}`;
   const bubbles = $("#chatBubbles");
   bubbles.innerHTML = "";
   $("#chatContinueBtn").classList.add("hidden");
@@ -338,12 +488,14 @@ function renderChatNode(node) {
       div.textContent = msg.text;
       bubbles.appendChild(div);
       bubbles.scrollTop = bubbles.scrollHeight;
+      playSound("click");
+      queueSpeak(msg.text);
       if (i === node.messages.length - 1) {
         const contBtn = $("#chatContinueBtn");
         contBtn.classList.remove("hidden");
         const clone = contBtn.cloneNode(true);
         contBtn.parentNode.replaceChild(clone, contBtn);
-        clone.addEventListener("click", () => goTo(node.next));
+        clone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
       }
     }, i * 900);
     state.chatTimers.push(t);
@@ -356,6 +508,8 @@ function renderMinigameNode(node) {
   $("#minigameInstructions").textContent = node.instructions;
   const wrap = $("#minigameItems");
   wrap.innerHTML = "";
+  const tipEl = $("#minigameTip");
+  tipEl.classList.add("hidden");
   const selected = new Set();
   let checked = false;
   const totalFlags = node.items.filter((i) => i.isFlag).length;
@@ -367,6 +521,7 @@ function renderMinigameNode(node) {
     btn.innerHTML = `<span>${node.mode === "evidencia" ? "📁" : "🚩"}</span><span>${item.text}</span>`;
     btn.addEventListener("click", () => {
       if (checked) return;
+      playSound("click");
       if (selected.has(item.id)) { selected.delete(item.id); btn.classList.remove("selected"); }
       else { selected.add(item.id); btn.classList.add("selected"); }
     });
@@ -384,18 +539,27 @@ function renderMinigameNode(node) {
   checkClone.addEventListener("click", () => {
     checked = true;
     let correctCount = 0, incorrectCount = 0;
+    const missed = [], falsePositives = [];
     node.items.forEach((item) => {
       const chip = wrap.querySelector(`[data-id="${item.id}"]`);
       const isSelected = selected.has(item.id);
       chip.classList.remove("selected");
-      if (item.isFlag && isSelected) { chip.classList.add("correct"); correctCount++; }
-      else if (item.isFlag && !isSelected) { chip.classList.add("incorrect"); }
-      else if (!item.isFlag && isSelected) { chip.classList.add("incorrect"); incorrectCount++; }
+      if (item.isFlag && isSelected) { chip.classList.add("correct", "pop-correct"); correctCount++; }
+      else if (item.isFlag && !isSelected) { chip.classList.add("incorrect"); missed.push(item.text); }
+      else if (!item.isFlag && isSelected) { chip.classList.add("incorrect", "shake-error"); incorrectCount++; falsePositives.push(item.text); }
       const ex = document.createElement("span");
       ex.className = "explain";
       ex.textContent = item.explain;
       chip.appendChild(ex);
     });
+
+    const isPerfect = missed.length === 0 && falsePositives.length === 0;
+    playSound(isPerfect ? "correct" : "incorrect");
+    const spoken = renderCheckTip(tipEl, {
+      isPerfect, missed, falsePositives, tip: node.tip,
+      goodMessage: "Identificaste exactamente lo que hacía falta, sin excederte.",
+    });
+    speak(spoken);
 
     if (node.mode === "evidencia") {
       state.currentCaseEvidencePerfect = (correctCount === totalFlags && incorrectCount === 0);
@@ -412,8 +576,37 @@ function renderMinigameNode(node) {
     contBtn.classList.remove("hidden");
     const contClone = contBtn.cloneNode(true);
     contBtn.parentNode.replaceChild(contClone, contBtn);
-    contClone.addEventListener("click", () => goTo(node.next));
+    contClone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
   });
+}
+
+/* ---------------- TIP INMEDIATO TRAS COMPROBAR ---------------- */
+function renderCheckTip(tipEl, { isPerfect, missed, falsePositives, tip, goodMessage }) {
+  let spoken = "";
+  if (isPerfect) {
+    tipEl.className = "tip-callout tip-good";
+    tipEl.innerHTML = `<strong>✅ ¡Bien hecho!</strong>${goodMessage || "Identificaste correctamente las señales clave de este caso."}`;
+    spoken = `Bien hecho. ${goodMessage || "Identificaste correctamente las señales clave de este caso."}`;
+  } else {
+    tipEl.className = "tip-callout tip-warn";
+    let html = `<strong>📌 Esto es lo que se te pasó</strong>`;
+    spoken = "Esto es lo que se te pasó. ";
+    if (missed.length) {
+      html += `<p>No marcaste: <strong>${missed.join(" · ")}</strong></p>`;
+      spoken += `No marcaste: ${missed.join(", ")}. `;
+    }
+    if (falsePositives.length) {
+      html += `<p>Marcaste de más (no era relevante): <strong>${falsePositives.join(" · ")}</strong></p>`;
+      spoken += `Marcaste de más, sin que fuera relevante: ${falsePositives.join(", ")}. `;
+    }
+    if (tip) {
+      html += `<div class="tip-hint">💡 <strong>Tip:</strong> ${tip}</div>`;
+      spoken += `Tip: ${tip}`;
+    }
+    tipEl.innerHTML = html;
+  }
+  tipEl.classList.remove("hidden");
+  return spoken;
 }
 
 /* ---------------- PUZZLE: INSPECCIONAR INTERFAZ SIMULADA ---------------- */
@@ -421,7 +614,9 @@ function renderInspectNode(node) {
   $("#inspectNode").classList.remove("hidden");
   $("#inspectInstructions").textContent = node.instructions;
   const frame = $("#inspectFrame");
-  frame.innerHTML = `<p class="mock-frame-label">${node.frameIcon || "📱"} ${node.frameLabel || "Interfaz simulada"}</p>`;
+  frame.innerHTML = `<p class="mock-frame-label"><span class="dots"><span></span><span></span><span></span></span>${node.frameIcon || "📱"} ${node.frameLabel || "Interfaz simulada"}</p>`;
+  const tipEl = $("#inspectTip");
+  tipEl.classList.add("hidden");
   const selected = new Set();
   let checked = false;
   const totalFlags = node.hotspots.filter((h) => h.isFlag).length;
@@ -434,6 +629,7 @@ function renderInspectNode(node) {
     btn.innerHTML = h.html;
     btn.addEventListener("click", () => {
       if (checked) return;
+      playSound("click");
       if (selected.has(h.id)) { selected.delete(h.id); btn.classList.remove("selected"); }
       else { selected.add(h.id); btn.classList.add("selected"); }
     });
@@ -449,18 +645,29 @@ function renderInspectNode(node) {
   checkClone.addEventListener("click", () => {
     checked = true;
     let correctCount = 0, incorrectCount = 0;
+    const missed = [], falsePositives = [];
     node.hotspots.forEach((h) => {
       const btn = frame.querySelector(`[data-id="${h.id}"]`);
       const isSelected = selected.has(h.id);
+      const label = stripHtml(h.html);
       btn.classList.remove("selected");
-      if (h.isFlag && isSelected) { btn.classList.add("correct"); correctCount++; }
-      else if (h.isFlag && !isSelected) { btn.classList.add("incorrect"); }
-      else if (!h.isFlag && isSelected) { btn.classList.add("incorrect"); incorrectCount++; }
+      if (h.isFlag && isSelected) { btn.classList.add("correct", "pop-correct"); correctCount++; }
+      else if (h.isFlag && !isSelected) { btn.classList.add("incorrect"); missed.push(label); }
+      else if (!h.isFlag && isSelected) { btn.classList.add("incorrect", "shake-error"); incorrectCount++; falsePositives.push(label); }
       const ex = document.createElement("span");
       ex.className = "explain";
       ex.textContent = h.explain;
       btn.appendChild(ex);
     });
+
+    const isPerfect = missed.length === 0 && falsePositives.length === 0;
+    playSound(isPerfect ? "correct" : "incorrect");
+    const spoken = renderCheckTip(tipEl, {
+      isPerfect, missed, falsePositives, tip: node.tip,
+      goodMessage: "Detectaste exactamente las señales que importaban en esta escena.",
+    });
+    speak(spoken);
+
     if (correctCount > 0 && node.achievementOnPerfect && correctCount === totalFlags && incorrectCount === 0) {
       unlockAchievement(node.achievementOnPerfect);
     }
@@ -470,7 +677,7 @@ function renderInspectNode(node) {
     contBtn.classList.remove("hidden");
     const contClone = contBtn.cloneNode(true);
     contBtn.parentNode.replaceChild(contClone, contBtn);
-    contClone.addEventListener("click", () => goTo(node.next));
+    contClone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
   });
 }
 
@@ -480,6 +687,8 @@ function renderAllocateNode(node) {
   $("#allocateInstructions").textContent = node.instructions;
   const grid = $("#allocateGrid");
   grid.innerHTML = "";
+  const tipEl = $("#allocateTip");
+  tipEl.classList.add("hidden");
   const selected = new Set();
   let checked = false;
 
@@ -496,6 +705,7 @@ function renderAllocateNode(node) {
     btn.innerHTML = `<span class="icon">${opt.icon}</span><span class="name">${opt.label}</span>`;
     btn.addEventListener("click", () => {
       if (checked) return;
+      playSound("click");
       if (selected.has(opt.id)) { selected.delete(opt.id); btn.classList.remove("selected"); }
       else if (selected.size < node.slots) { selected.add(opt.id); btn.classList.add("selected"); }
       updateCounter();
@@ -514,6 +724,7 @@ function renderAllocateNode(node) {
     checked = true;
     let qualitySum = 0;
     const chosenTools = [];
+    const weakPicks = [];
     node.options.forEach((opt) => {
       const btn = grid.querySelector(`[data-id="${opt.id}"]`);
       const isSelected = selected.has(opt.id);
@@ -521,8 +732,9 @@ function renderAllocateNode(node) {
       if (isSelected) {
         qualitySum += opt.quality;
         chosenTools.push(opt.tool);
-        if (opt.quality >= 1) btn.classList.add("correct");
-        else if (opt.quality <= 0) btn.classList.add("incorrect");
+        if (opt.quality >= 1) { btn.classList.add("correct", "pop-correct"); }
+        else if (opt.quality <= 0) { btn.classList.add("incorrect", "shake-error"); weakPicks.push(opt); }
+        else { btn.classList.add("suboptimal"); weakPicks.push(opt); }
         const ex = document.createElement("span");
         ex.className = "explain";
         ex.textContent = opt.explain;
@@ -547,11 +759,28 @@ function renderAllocateNode(node) {
     }
     updateHud();
 
+    playSound(weakPicks.length === 0 ? "correct" : "incorrect");
+    let spoken;
+    if (weakPicks.length === 0) {
+      tipEl.className = "tip-callout tip-good";
+      tipEl.innerHTML = `<strong>✅ Excelente plan.</strong> Elegiste las acciones más efectivas para este caso.`;
+      spoken = "Excelente plan. Elegiste las acciones más efectivas para este caso.";
+    } else {
+      tipEl.className = "tip-callout tip-warn";
+      let html = `<strong>📌 Tu plan pudo ser más fuerte</strong><ul>` +
+        weakPicks.map((o) => `<li><strong>${o.label}:</strong> ${o.explain}</li>`).join("") + `</ul>`;
+      spoken = "Tu plan pudo ser más fuerte. " + weakPicks.map((o) => `${o.label}: ${o.explain}`).join(" ");
+      if (node.tip) { html += `<div class="tip-hint">💡 <strong>Tip:</strong> ${node.tip}</div>`; spoken += ` Tip: ${node.tip}`; }
+      tipEl.innerHTML = html;
+    }
+    tipEl.classList.remove("hidden");
+    speak(spoken);
+
     confirmClone.classList.add("hidden");
     contBtn.classList.remove("hidden");
     const contClone = contBtn.cloneNode(true);
     contBtn.parentNode.replaceChild(contClone, contBtn);
-    contClone.addEventListener("click", () => goTo(node.next));
+    contClone.addEventListener("click", () => { playSound("click"); goTo(node.next); });
   });
 }
 
@@ -563,6 +792,7 @@ function unlockAchievement(id) {
   const toast = $("#achievementToast");
   toast.innerHTML = `<span class="text-lg">${a.icon}</span><span>${a.title}</span>`;
   toast.classList.remove("hidden");
+  playSound("achievement");
   clearTimeout(toast._timer);
   toast._timer = setTimeout(() => toast.classList.add("hidden"), 3200);
 }
@@ -585,6 +815,7 @@ function renderNpcReaction(resolutionId) {
       <p class="text-sm text-slate-300 mt-1 leading-relaxed italic">${npc[tier]}</p>
     </div>`;
   card.classList.remove("hidden");
+  queueSpeak(`${npc.name} responde: ${npc[tier]}`);
 }
 
 function computeEnding() {
@@ -598,6 +829,9 @@ function computeEnding() {
   $("#endingIcon").className = `mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-3xl text-4xl bg-gradient-to-br ${resolution.color}`;
   $("#endingTitle").textContent = resolution.title;
   $("#endingText").textContent = resolution.text;
+  speak(`${resolution.title}. ${resolution.text}`);
+  playSound(resolutionId === "exito" ? "success" : "click");
+  if (resolutionId === "exito") burstConfetti();
 
   renderNpcReaction(resolutionId);
   renderAchievements();
