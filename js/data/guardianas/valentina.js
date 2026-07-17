@@ -85,6 +85,18 @@ const valentinaScenarios = {
           { id: "e4", text: "La dirección de la casa de Laura", isFlag: false,
             explain: "No es evidencia del caso, y compartirla —incluso para 'documentar'— expone innecesariamente a Laura." },
         ],
+        next: "v4b" },
+
+      v4b: { type: "sequence", speaker: "🧩 Reconstruye cómo escaló el patrón", mood: "preocupada", bg: "scene-room",
+        instructions: "Ordena estos hechos del más antiguo (1) al más reciente y grave (4), según lo que Laura te contó.",
+        tip: "El control casi nunca empieza de golpe — suele escalar paso a paso, y cada paso nuevo se siente 'un poco menos grave' que el anterior. Reconocer la escalada completa ayuda a actuar antes de que llegue más lejos.",
+        items: [
+          { id: "sq1", text: "Empieza a escribirle muchas veces seguidas, sin parar." },
+          { id: "sq2", text: "Se enoja si Laura no responde en menos de 5 minutos." },
+          { id: "sq3", text: "Le pide fotos para 'comprobar' que no le está mintiendo." },
+          { id: "sq4", text: "Exige saber su ubicación en tiempo real varias veces por semana." },
+        ],
+        order: ["sq1", "sq2", "sq3", "sq4"],
         next: "choice1" },
 
       choice1: { type: "allocate", speaker: "Valentina — Arma tu plan de acción", mood: "preocupada", text:
@@ -171,6 +183,18 @@ const valentinaScenarios = {
           { id: "e4", text: "La contraseña de la cuenta real de Mafe, 'para comparar'", isFlag: false,
             explain: "Una contraseña nunca es evidencia válida — y compartirla, incluso entre Guardianas, es un riesgo de seguridad grave. Nunca se comparte." },
         ],
+        next: "g3b" },
+
+      g3b: { type: "sequence", speaker: "🧩 Ordena cómo investigar un perfil sospechoso", mood: "preocupada", bg: "scene-street-day",
+        instructions: "Ordena estos pasos en el orden en que deberían hacerse para confirmar si un perfil es falso.",
+        tip: "Revisar las señales del perfil antes de contactar a la persona real te da algo concreto que mostrarle — llegar con evidencia hace la verificación mucho más rápida.",
+        items: [
+          { id: "sq1", text: "Revisar hace cuánto se creó la cuenta." },
+          { id: "sq2", text: "Revisar si tiene contenido propio o solo fotos copiadas." },
+          { id: "sq3", text: "Verificar con la persona real por un canal oficial." },
+          { id: "sq4", text: "Reportar el perfil con toda la evidencia reunida." },
+        ],
+        order: ["sq1", "sq2", "sq3", "sq4"],
         next: "choice1" },
 
       choice1: { type: "allocate", speaker: "Valentina — Arma tu plan de acción", mood: "preocupada", text:
@@ -263,6 +287,18 @@ const valentinaScenarios = {
           { id: "e4", text: "Compartir la dirección de Andrea con más gente 'para advertirles'", isFlag: false,
             explain: "Incluso con buena intención, seguir repitiendo la dirección expuesta multiplica el daño en vez de contenerlo. Nunca se debe re-difundir información doxeada." },
         ],
+        next: "dx4b" },
+
+      dx4b: { type: "sequence", speaker: "🧩 Ordena la respuesta ante un caso de doxing", mood: "asustada", bg: "scene-tension",
+        instructions: "El riesgo físico cambia el orden habitual — ordena estas acciones según la urgencia real de este caso.",
+        tip: "Cuando hay riesgo físico real, avisar a la persona afectada va primero — el resto del proceso formal sigue siendo necesario, pero no puede esperar a ser lo primero.",
+        items: [
+          { id: "sq1", text: "Avisar a Andrea de inmediato sobre lo que está circulando." },
+          { id: "sq2", text: "Guardar evidencia del hilo (captura, fecha, usuario)." },
+          { id: "sq3", text: "Reportar el hilo a los moderadores del foro." },
+          { id: "sq4", text: "Orientarla a denunciar en el CAI Virtual." },
+        ],
+        order: ["sq1", "sq2", "sq3", "sq4"],
         next: "choice1" },
 
       choice1: { type: "allocate", speaker: "Valentina — Arma tu plan de acción", mood: "preocupada", text:
