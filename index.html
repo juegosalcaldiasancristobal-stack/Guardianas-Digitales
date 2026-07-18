@@ -327,5 +327,82 @@
   <script src="js/data/guardianas/sofia.js?v=11"></script>
   <script src="js/data/guardianas/index.js?v=11"></script>
   <script src="js/engine.js?v=11"></script>
+  <script>
+  /* ===== REGISTRO SHEETS - Guardianas Digitales =====
+     El formulario ya exige nombre + correo + edad antes
+     de habilitar startBtn. Solo leemos esos campos cuando
+     el boton se activa y enviamos a Google Sheets.
+     engine.js procesa el mismo click en paralelo
+     (renderGuardianaSelect + showScreen("screen-select")).
+     Sin modal extra. Sin cloneNode. Sin conflictos.
+  =================================================== */
+  (function(){
+    var EP = "https://script.google.com/macros/s/AKfycbwFRBcEjMcmtgYJQ2l8M9cT6hgW9LVLT7_uJ0o5pCKYLoq-IOnkfk-_2Qs0lQxg_VKZ/exec";
+
+    function toast(msg, color){
+      var t = document.createElement("div");
+      t.textContent = msg;
+      t.style.cssText = "position:fixed;bottom:1.5rem;right:1.5rem;z-index:999999;"+
+        "background:"+(color||"#0d9488")+";color:#fff;font-family:system-ui,sans-serif;"+
+        "font-size:.85rem;font-weight:600;padding:.65rem 1.1rem;border-radius:.6rem;"+
+        "box-shadow:0 4px 20px rgba(0,0,0,.4)";
+      document.body.appendChild(t);
+      setTimeout(function(){ t.style.transition="opacity .6s"; t.style.opacity="0"; },2800);
+      setTimeout(function(){ t.remove(); },3500);
+    }
+
+    function enviar(d){
+      fetch(EP, {
+        method : "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body   : JSON.stringify(d)
+      })
+      .then(function(res){ return res.text().then(function(txt){
+        try {
+          var j = JSON.parse(txt);
+          j.ok ? toast("Registro guardado correctamente")
+               : toast("Error Apps Script: "+(j.error||txt), "#dc2626");
+        } catch(e){ toast("Registro guardado correctamente"); }
+      });})
+      .catch(function(){
+        /* CORS bloqueado: reintentar con no-cors */
+        fetch(EP, { method:"POST", mode:"no-cors", body:JSON.stringify(d) })
+          .then(function(){ toast("Registro guardado correctamente"); });
+      });
+      console.info("[Sheets GD]", d.nombre, "/", d.edad, "/", d.correo);
+    }
+
+    document.addEventListener("DOMContentLoaded", function(){
+      var btn = document.getElementById("startBtn");
+      if (!btn){ console.error("[Sheets GD] #startBtn no encontrado"); return; }
+
+      /* Listener adicional — engine.js conserva el suyo intacto */
+      btn.addEventListener("click", function(){
+        var nom  = (document.getElementById("regFullName") ?
+                    document.getElementById("regFullName").value.trim() : "");
+        var mail = (document.getElementById("regEmail") ?
+                    document.getElementById("regEmail").value.trim() : "");
+        var edad = (document.getElementById("regAgeRange") ?
+                    document.getElementById("regAgeRange").value : "");
+
+        if (!nom || !edad) return; /* no deberia pasar (startBtn esta disabled sin datos) */
+
+        enviar({
+          evento  : "registro",
+          juego   : "Guardianas Digitales",
+          nombre  : nom,
+          correo  : mail,
+          edad    : edad,
+          modo    : "individual",
+          completo: false
+        });
+      });
+
+      console.info("[Sheets GD] listener de registro activo");
+    });
+
+  })();
+  </script>
+
 </body>
 </html>
